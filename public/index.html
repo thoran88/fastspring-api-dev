@@ -1,0 +1,590 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Checkout &mdash; Odyssey (Payment Components)</title>
+    <script>
+      (function () {
+        var stored = localStorage.getItem("theme");
+        var theme =
+          stored ||
+          (matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light");
+        document.documentElement.setAttribute("data-theme", theme);
+      })();
+    </script>
+    <script src="https://cdn.onfastspring.com/checkout-sdk/latest/fastspring-sdk.js"></script>
+    <style>
+      :root {
+        --bg: #f6f7fb;
+        --surface: #ffffff;
+        --surface-2: #fbfaff;
+        --border: #e4e3f5;
+        --text: #14121f;
+        --text-muted: #5c5a72;
+        --text-faint: #8b8aa0;
+        --accent-solid: #6d28d9;
+        --success: #0f9d58;
+        --success-soft: #e6f6ec;
+        --shadow-md: 0 8px 24px rgba(30, 20, 60, 0.08);
+        --radius: 16px;
+      }
+
+      :root[data-theme="dark"] {
+        --bg: #08070d;
+        --surface: #131120;
+        --surface-2: #17142a;
+        --border: #2a2643;
+        --text: #f2f1fb;
+        --text-muted: #a9a6c4;
+        --text-faint: #716e94;
+        --accent-solid: #a78bfa;
+        --success: #34d399;
+        --success-soft: #103224;
+        --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font:
+          15px/1.55 -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Roboto,
+          Helvetica,
+          Arial,
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      /* ---------- top bar ---------- */
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 24px;
+        border-bottom: 1px solid var(--border);
+        background: var(--surface);
+      }
+
+      .brand {
+        font-size: 13.5px;
+        font-weight: 600;
+        color: var(--text-muted);
+      }
+
+      .top-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .env-badge {
+        font-size: 11.5px;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: var(--success-soft);
+        color: var(--success);
+        white-space: nowrap;
+      }
+
+      .theme-toggle {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--bg);
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+      .theme-toggle:hover {
+        border-color: var(--accent-solid);
+        color: var(--accent-solid);
+      }
+      .theme-toggle svg {
+        width: 15px;
+        height: 15px;
+      }
+      .theme-toggle .icon-sun,
+      .theme-toggle .icon-moon {
+        display: none;
+      }
+      :root[data-theme="light"] .theme-toggle .icon-moon {
+        display: block;
+      }
+      :root[data-theme="dark"] .theme-toggle .icon-sun {
+        display: block;
+      }
+
+      /* ---------- layout ---------- */
+      .checkout {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 40px 32px 80px;
+        display: grid;
+        grid-template-columns: 360px 1fr;
+        gap: 40px;
+        align-items: start;
+      }
+
+      @media (max-width: 1180px) {
+        .checkout {
+          grid-template-columns: 1fr;
+          padding: 24px 16px 56px;
+        }
+      }
+
+      .panel-label {
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--text-faint);
+        margin: 0 0 16px;
+      }
+
+      /* ---------- left: order summary ---------- */
+      .summary-card {
+        position: sticky;
+        top: 24px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 26px;
+        box-shadow: var(--shadow-md);
+      }
+
+      @media (max-width: 1180px) {
+        .summary-card {
+          position: static;
+        }
+      }
+
+      .product-row {
+        display: flex;
+        gap: 16px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .product-thumb {
+        width: 84px;
+        height: 112px;
+        object-fit: cover;
+        border-radius: 10px;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        flex-shrink: 0;
+      }
+
+      .product-info {
+        flex-grow: 1;
+        min-width: 0;
+      }
+
+      .product-title {
+        font-size: 16px;
+        font-weight: 700;
+        margin: 0 0 6px;
+      }
+
+      .product-desc {
+        font-size: 13px;
+        color: var(--text-muted);
+        margin: 0 0 10px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .product-meta {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        font-size: 13px;
+        color: var(--text-faint);
+      }
+
+      .breakdown {
+        padding: 20px 0;
+      }
+
+      .breakdown-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+        color: var(--text-muted);
+        padding: 5px 0;
+      }
+
+      .breakdown-row.total {
+        margin-top: 8px;
+        padding-top: 14px;
+        border-top: 1px solid var(--border);
+        font-size: 17px;
+        font-weight: 800;
+        color: var(--text);
+      }
+
+      /* ---------- right: payment ---------- */
+      .payment-card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 26px;
+        box-shadow: var(--shadow-md);
+      }
+
+      .payment-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 18px;
+      }
+
+      .payment-head h2 {
+        font-size: 16px;
+        margin: 0;
+        font-weight: 700;
+      }
+
+      .lock-note {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 12px;
+        color: var(--text-faint);
+      }
+      .lock-note svg {
+        width: 13px;
+        height: 13px;
+      }
+
+      .contact-fields label {
+        display: block;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--text-muted);
+        margin-bottom: 14px;
+      }
+
+      .contact-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .contact-fields input {
+        display: block;
+        width: 100%;
+        margin-top: 5px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--surface-2);
+        color: var(--text);
+        font-size: 14px;
+      }
+
+      .proceed-btn {
+        margin-top: 6px;
+        width: 100%;
+        font-size: 14px;
+        font-weight: 700;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 10px;
+        background: var(--accent-solid);
+        color: #fff;
+        cursor: pointer;
+      }
+      .proceed-btn:hover {
+        opacity: 0.9;
+      }
+      .proceed-btn:disabled {
+        opacity: 0.6;
+        cursor: default;
+      }
+
+      #card-element,
+      #pay-button-element,
+      #disclosures-container {
+        margin-top: 16px;
+      }
+
+      .payment-log {
+        display: none;
+        margin-top: 14px;
+        font-size: 12.5px;
+        color: var(--text-faint);
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="topbar">
+      <span class="brand">FastSpring &middot; Payment Components</span>
+      <div class="top-controls">
+        <span class="env-badge">QA0 Sandbox &middot; No real charges</span>
+        <button
+          class="theme-toggle"
+          id="theme-toggle"
+          type="button"
+          aria-label="Toggle color theme"
+        >
+          <svg
+            class="icon-sun"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="4" />
+            <path
+              d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"
+            />
+          </svg>
+          <svg
+            class="icon-moon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="checkout">
+      <!-- Left: order summary. Title/description/image are static (known,
+           fixed product); price/totals populate once a real session exists. -->
+      <div>
+        <p class="panel-label">Order Summary</p>
+        <div class="summary-card">
+          <div class="product-row">
+            <img
+              class="product-thumb"
+              src="https://d38v6yr1d77bzy.cloudfront.net/FRUTKLPXKBGGE/Z_JCiDNhTyY/odyssey.jpeg"
+              alt="Odyssey cover"
+            />
+            <div class="product-info">
+              <p class="product-title">Odyssey</p>
+              <p class="product-desc">
+                The Odyssey is one of two major epics of ancient Greek
+                literature attributed to Homer.
+              </p>
+              <div class="product-meta">
+                <span>Qty <span id="item-qty">1</span></span>
+                <span id="item-price">&mdash;</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="breakdown">
+            <div class="breakdown-row total">
+              <span>Total</span>
+              <span id="order-total">&mdash;</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Payment Components, mounted at load, populated once the
+           server-created session is passed to sdk.checkout(). -->
+      <div>
+        <p class="panel-label">Payment Details</p>
+        <div class="payment-card">
+          <div class="payment-head">
+            <h2>Pay with card</h2>
+            <span class="lock-note">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <rect x="3" y="11" width="18" height="10" rx="2" />
+                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+              </svg>
+              Encrypted
+            </span>
+          </div>
+
+          <div id="contact-step">
+            <div class="contact-fields">
+              <label
+                >Email
+                <input id="buyerEmail" value="test@example.com" />
+              </label>
+              <div class="contact-row">
+                <label
+                  >First name
+                  <input id="buyerFirstName" value="Test" />
+                </label>
+                <label
+                  >Last name
+                  <input id="buyerLastName" value="Buyer" />
+                </label>
+              </div>
+              <label
+                >Country
+                <input id="buyerCountry" value="US" />
+              </label>
+            </div>
+            <button id="proceed-btn" class="proceed-btn">
+              Continue to Payment
+            </button>
+          </div>
+
+          <div id="components-step" style="display: none">
+            <div id="card-element"></div>
+            <div id="pay-button-element"></div>
+            <div id="disclosures-container"></div>
+          </div>
+
+          <div id="payment-log" class="payment-log"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        var btn = document.getElementById("theme-toggle");
+        if (!btn) return;
+        btn.addEventListener("click", function () {
+          var current = document.documentElement.getAttribute("data-theme");
+          var next = current === "dark" ? "light" : "dark";
+          document.documentElement.setAttribute("data-theme", next);
+          localStorage.setItem("theme", next);
+        });
+      })();
+
+      function showLog(msg) {
+        var el = document.getElementById("payment-log");
+        el.textContent = msg;
+        el.style.display = msg ? "block" : "none";
+      }
+
+      function populateSummary(session) {
+        var item = session.cart && session.cart.lineItems && session.cart.lineItems[0];
+        if (item && item.price) {
+          document.getElementById("item-qty").textContent = item.quantity;
+          document.getElementById("item-price").textContent =
+            item.price.unitNetPriceDisplay + " each";
+        }
+        if (session.cart) {
+          document.getElementById("order-total").textContent =
+            session.cart.withTaxNetTotalDisplay || session.cart.netTotalDisplay;
+        }
+      }
+
+      var sdk = FastSpring.init({
+        checkoutUrl: "https://thoran.test.qa.onfastspring.com/components-gaming",
+        env: "qa0",
+        debug: true,
+        onSessionLoaded: populateSummary,
+        onOrderCompleted: function () {
+          showLog("Order completed!");
+        },
+        onPaymentFailed: function (error) {
+          showLog("Payment failed: " + JSON.stringify(error));
+        },
+      });
+
+      var cardComponent = sdk.components.create("fs-card", {});
+      cardComponent.mount("#card-element");
+
+      var payButtonComponent = sdk.components.create("fs-pay-button", {});
+      payButtonComponent.mount("#pay-button-element");
+
+      var disclosuresComponent = sdk.components.create("fs-disclosures", {});
+      disclosuresComponent.mount("#disclosures-container");
+
+      document
+        .getElementById("proceed-btn")
+        .addEventListener("click", async function () {
+          var contact = {
+            email: document.getElementById("buyerEmail").value.trim(),
+            first: document.getElementById("buyerFirstName").value.trim(),
+            last: document.getElementById("buyerLastName").value.trim(),
+            country: document.getElementById("buyerCountry").value.trim(),
+          };
+          if (!contact.email) {
+            showLog("Enter an email to continue.");
+            return;
+          }
+
+          var btn = document.getElementById("proceed-btn");
+          btn.disabled = true;
+          btn.textContent = "Loading…";
+          showLog("");
+
+          try {
+            var res = await fetch("/api/session", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                items: [{ product: "odyssey", quantity: 1 }],
+                contact: contact,
+              }),
+            });
+            var session = await res.json();
+
+            if (!res.ok) {
+              showLog(
+                "Session creation failed: " +
+                  (session.error ? JSON.stringify(session) : "unknown error"),
+              );
+              btn.disabled = false;
+              btn.textContent = "Continue to Payment";
+              return;
+            }
+
+            populateSummary(session);
+            document.getElementById("contact-step").style.display = "none";
+            document.getElementById("components-step").style.display = "block";
+
+            sdk.checkout(session.id, {
+              onSuccess: function () {
+                showLog("");
+              },
+              onError: function (err) {
+                showLog("Session load failed: " + JSON.stringify(err));
+              },
+            });
+          } catch (err) {
+            showLog("Request failed: " + err.message);
+            btn.disabled = false;
+            btn.textContent = "Continue to Payment";
+          }
+        });
+    </script>
+  </body>
+</html>
