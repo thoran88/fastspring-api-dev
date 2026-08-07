@@ -164,6 +164,7 @@ const backdrop = document.getElementById("modal-backdrop");
 const checkoutView = document.getElementById("checkout-view");
 const successView = document.getElementById("success-view");
 const errorBanner = document.getElementById("error-banner");
+const componentsWrap = document.getElementById("components-wrap");
 let currentGame = null;
 
 function openModal(game) {
@@ -181,6 +182,9 @@ function openModal(game) {
   errorBanner.style.display = "none";
   successView.classList.remove("open");
   checkoutView.style.display = "block";
+  // A new session is created below every time the modal opens, so the
+  // skeleton needs to come back too - not just on the very first load.
+  componentsWrap.classList.add("is-loading");
   backdrop.classList.add("open");
   startCheckoutSession();
 }
@@ -223,7 +227,10 @@ async function startCheckoutSession() {
     }
 
     sdk.checkout(data.id, {
-      onSuccess: () => console.log("Session attached — checkout ready"),
+      onSuccess: () => {
+        console.log("Session attached — checkout ready");
+        componentsWrap.classList.remove("is-loading");
+      },
       onError: (err) => showError(err?.message || "Checkout failed to load"),
     });
   } catch (err) {

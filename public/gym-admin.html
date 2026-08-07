@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>FlexFit Admin — Manage Members</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Set the theme before first paint so there's no flash of the wrong theme. -->
+    <script>
+      (function () {
+        var stored = localStorage.getItem("nova-theme");
+        var theme =
+          stored ||
+          (window.matchMedia("(prefers-color-scheme: light)").matches
+            ? "light"
+            : "dark");
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body>
+    <script type="module" src="admin-theme.js"></script>
+
+    <header>
+      <div class="logo">FLEXFIT<span>Staff Admin</span></div>
+      <div style="display: flex; align-items: center; gap: 0.8rem;">
+        <a href="gym.html" class="admin-link">← Customer signup</a>
+        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme"></button>
+      </div>
+    </header>
+
+    <div class="hero">
+      <h1>Manage members</h1>
+      <p>
+        Charge a member for the usage they've racked up this cycle, or
+        cancel their membership. Nothing here is charged automatically -
+        every charge is a deliberate action against FastSpring's Managed
+        Subscription API.
+      </p>
+    </div>
+
+    <main class="gym-layout">
+      <section class="gym-card">
+        <div class="admin-toolbar">
+          <h2>Members</h2>
+          <button id="refresh-btn" class="admin-refresh-btn">Refresh</button>
+        </div>
+        <div id="members-list"></div>
+      </section>
+    </main>
+
+    <script type="module" src="gym-admin.js"></script>
+  </body>
+</html>

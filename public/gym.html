@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>FlexFit — Pay-As-You-Go Billing</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Set the theme before first paint so there's no flash of the wrong theme. -->
+    <script>
+      (function () {
+        var stored = localStorage.getItem("nova-theme");
+        var theme =
+          stored ||
+          (window.matchMedia("(prefers-color-scheme: light)").matches
+            ? "light"
+            : "dark");
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+
+    <script src="https://cdn.onfastspring.com/checkout-sdk/latest/fastspring-sdk.js"></script>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body>
+    <!-- FastSpring SDK init + component mounting - uses a dedicated "gym"
+         checkout, separate from the game store's "components-gaming". -->
+    <script type="module" src="fs-sdk-gym.js"></script>
+    <script type="module" src="fs-components-gym.js"></script>
+    <script type="module" src="theme-gym.js"></script>
+
+    <header>
+      <div class="logo">FLEXFIT<span>Pay-As-You-Go Billing</span></div>
+      <div style="display: flex; align-items: center; gap: 0.8rem;">
+        <a href="gym-admin.html" class="admin-link">Staff admin →</a>
+        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme"></button>
+      </div>
+    </header>
+
+    <div class="hero">
+      <h1>Authorize billing once. Pay only for classes you actually take.</h1>
+      <p>
+        This is a Managed Subscription - there's no fixed price or interval.
+        Authorizing below doesn't charge you anything; FlexFit charges your
+        card afterward for whatever you actually used that cycle.
+      </p>
+    </div>
+
+    <main class="gym-layout">
+      <section class="gym-card">
+        <h2>1. Authorize pay-as-you-go billing</h2>
+        <p class="gym-sub">
+          No charge happens now - this sets up a billing agreement so FlexFit
+          can charge your card later for classes you attend.
+        </p>
+
+        <div id="authorize-view">
+          <div class="field-row">
+            <div class="field">
+              <label>First name</label>
+              <input type="text" id="fname" value="Test" />
+            </div>
+            <div class="field">
+              <label>Last name</label>
+              <input type="text" id="lname" value="Buyer" />
+            </div>
+          </div>
+          <div class="field">
+            <label>Email</label>
+            <input type="email" id="email" />
+          </div>
+
+          <div class="components-wrap is-loading" id="components-wrap">
+            <div class="component-skeleton">
+              <div class="skeleton-line"></div>
+              <div class="skeleton-line"></div>
+              <div class="skeleton-line" style="height: 48px"></div>
+              <div class="skeleton-line short"></div>
+            </div>
+            <div id="card-element"></div>
+            <div id="pay-button-element"></div>
+            <div id="disclosures-element"></div>
+          </div>
+
+          <div class="error-banner" id="error-banner"></div>
+        </div>
+
+        <div class="success-banner" id="authorize-success" style="display: none">
+          <strong>Billing authorized.</strong>
+          <p id="authorize-success-detail"></p>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="gym.js"></script>
+  </body>
+</html>

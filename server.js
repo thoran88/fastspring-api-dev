@@ -32,13 +32,18 @@ const authHeader =
 // Checkout Components sessions have to be created against this
 // checkout-scoped v2 endpoint (not the generic /sessions one) - confirmed
 // from a working reference implementation. Account/checkout match the
-// checkoutUrl the frontend initializes the SDK with.
+// checkoutUrl the frontend initializes the SDK with. Different checkouts
+// have their own renewal/domain-whitelisting config, so each frontend flow
+// (game store vs gym) passes its own checkoutPath rather than sharing one.
 const FASTSPRING_ACCOUNT = "thoran";
-const FASTSPRING_CHECKOUT_PATH = "components-gaming";
+const DEFAULT_CHECKOUT_PATH = "components-gaming";
 
 // Any product tagged with this sku (case-sensitive, set in the dashboard)
 // is treated as part of the storefront catalog - no path list to maintain.
 const CATALOG_SKU = "GAME";
+
+// The gym demo has exactly one Managed Subscription product.
+const GYM_PRODUCT_PATH = "gym-as-you-go";
 
 const app = express();
 
@@ -88,6 +93,15 @@ app.post(
     // same event more than once - dedupe on event.id if you persist these.
     for (const event of payload.events ?? []) {
       console.log(`Webhook event: ${event.type} (${event.id})`, event.data);
+
+      // order.completed doesn't include a subscription ID - this is the
+      // one reliable place to find it, since it's the subscription object
+      // itself (data.id, with a legacy "subscription" alias for the same).
+      if (event.type === "subscription.activated") {
+        console.log(
+          `  -> subscription.activated: id=${event.data?.id} account=${event.data?.account}`,
+        );
+      }
     }
 
     res.sendStatus(200);
@@ -101,7 +115,13 @@ app.use(express.static(path.join(__dirname, "public")));
 // needs the store's API credentials, which must never reach the browser.
 // The client only ever sees the resulting session id.
 app.post("/api/session", async (req, res) => {
-  const { firstName, lastName, email, productPath } = req.body ?? {};
+  const {
+    firstName,
+    lastName,
+    email,
+    productPath,
+    checkoutPath = DEFAULT_CHECKOUT_PATH,
+  } = req.body ?? {};
   if (!email) {
     return res.status(400).json({ error: "email is required" });
   }
@@ -111,7 +131,7 @@ app.post("/api/session", async (req, res) => {
 
   try {
     const response = await fetch(
-      `${FASTSPRING_API_BASE}/v2/checkouts/${FASTSPRING_ACCOUNT}/${FASTSPRING_CHECKOUT_PATH}/sessions`,
+      `${FASTSPRING_API_BASE}/v2/checkouts/${FASTSPRING_ACCOUNT}/${checkoutPath}/sessions`,
       {
         method: "POST",
         headers: {
@@ -204,6 +224,216 @@ app.get("/api/products", async (req, res) => {
   } catch (err) {
     console.error("Products fetch error", err);
     res.status(500).json({ error: "Failed to load products" });
+  }
+});
+
+// Order IDs and subscription IDs are both opaque strings that show up next
+// to each other in the dashboard, so pasting the wrong one is an easy
+// mistake to make. If the given ID isn't a subscription, check whether it's
+// actually an order and use *its* subscription instead of just failing.
+async function resolveSubscriptionId(id) {
+  const subResponse = await fetch(`${FASTSPRING_API_BASE}/subscriptions/${id}`, {
+    headers: { Authorization: authHeader },
+  });
+  const subData = await subResponse.json();
+  if (subResponse.ok && subData.result === "success") {
+    return { subscriptionId: id, resolvedFrom: "subscription" };
+  }
+
+  const orderResponse = await fetch(`${FASTSPRING_API_BASE}/orders/${id}`, {
+    headers: { Authorization: authHeader },
+  });
+  const orderData = await orderResponse.json();
+  if (orderResponse.ok && orderData.result === "success") {
+    const subscriptionId = orderData.items?.find(
+      (item) => item.subscription,
+    )?.subscription;
+    if (subscriptionId) {
+      return { subscriptionId, resolvedFrom: "order" };
+    }
+  }
+
+  return null;
+}
+
+// Managed Subscriptions have no fixed price on the product itself - the
+// seller decides what to charge and when. Doing that is two separate API
+// calls: set the price for this cycle, then trigger a rebill at that price.
+app.post("/api/subscriptions/:id/charge", async (req, res) => {
+  const inputId = req.params.id;
+  const amount = Number(req.body?.amount);
+
+  if (!inputId) {
+    return res.status(400).json({ error: "subscription id is required" });
+  }
+  if (!Number.isFinite(amount) || amount <= 0) {
+    return res
+      .status(400)
+      .json({ error: "amount must be a positive number" });
+  }
+
+  try {
+    const resolved = await resolveSubscriptionId(inputId);
+    if (!resolved) {
+      return res.status(404).json({
+        error: `Could not find a subscription for "${inputId}" - checked it as both a subscription ID and an order ID`,
+      });
+    }
+    const subscriptionId = resolved.subscriptionId;
+
+    const priceResponse = await fetch(`${FASTSPRING_API_BASE}/subscriptions`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: authHeader,
+      },
+      body: JSON.stringify({
+        subscriptions: [
+          {
+            subscription: subscriptionId,
+            pricing: { price: { USD: amount } },
+          },
+        ],
+      }),
+    });
+    const priceData = await priceResponse.json();
+    const priceResult = priceData.subscriptions?.[0];
+    if (!priceResponse.ok || priceResult?.result !== "success") {
+      console.error("Setting subscription price failed", priceData);
+      return res
+        .status(502)
+        .json({ error: "Failed to set charge amount", details: priceData });
+    }
+
+    const chargeResponse = await fetch(
+      `${FASTSPRING_API_BASE}/subscriptions/charge`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: authHeader,
+        },
+        body: JSON.stringify({
+          subscriptions: [{ subscription: subscriptionId }],
+        }),
+      },
+    );
+    const chargeData = await chargeResponse.json();
+    const chargeResult = chargeData.subscriptions?.[0];
+    if (!chargeResponse.ok || chargeResult?.result !== "success") {
+      console.error("Charging subscription failed", chargeData);
+      return res.status(502).json({
+        error: "Charge failed",
+        details: chargeResult || chargeData,
+      });
+    }
+
+    res.json({
+      subscription: subscriptionId,
+      amount,
+      result: "success",
+      resolvedFrom: resolved.resolvedFrom,
+    });
+  } catch (err) {
+    console.error("Subscription charge error", err);
+    res.status(500).json({ error: "Failed to process charge" });
+  }
+});
+
+// Admin member list - every gym subscription plus its account contact info
+// (subscriptions don't carry the customer's email/name directly, only an
+// account ID, so this is a list call followed by a bulk account lookup).
+app.get("/api/gym/members", async (req, res) => {
+  try {
+    const subsResponse = await fetch(
+      `${FASTSPRING_API_BASE}/subscriptions?products=${GYM_PRODUCT_PATH}&scope=test`,
+      { headers: { Authorization: authHeader } },
+    );
+    const subsData = await subsResponse.json();
+    if (!subsResponse.ok) {
+      console.error("Listing gym subscriptions failed", subsData);
+      return res
+        .status(502)
+        .json({ error: "Failed to list subscriptions", details: subsData });
+    }
+
+    const subs = (subsData.subscriptions || []).filter(
+      (s) => s && typeof s === "object",
+    );
+    if (subs.length === 0) {
+      return res.json({ members: [] });
+    }
+
+    // Unlike /products and /orders, /accounts doesn't support a
+    // comma-separated batch lookup - it just treats the joined string as
+    // one (invalid) id. Fetch each unique account individually instead.
+    const accountIds = [...new Set(subs.map((s) => s.account))];
+    const accountResults = await Promise.all(
+      accountIds.map((id) =>
+        fetch(`${FASTSPRING_API_BASE}/accounts/${id}`, {
+          headers: { Authorization: authHeader },
+        }).then((r) => r.json()),
+      ),
+    );
+    const contactByAccount = new Map(
+      accountResults
+        .filter((a) => a.result === "success")
+        .map((a) => [a.account, a.contact]),
+    );
+
+    const members = subs.map((s) => {
+      const contact = contactByAccount.get(s.account) || {};
+      return {
+        id: s.id,
+        accountId: s.account,
+        email: contact.email || null,
+        name: [contact.first, contact.last].filter(Boolean).join(" ") || null,
+        state: s.state,
+        price: s.priceDisplay,
+        begin: s.beginDisplay,
+        nextChargeDate: s.nextChargeDateDisplay,
+      };
+    });
+
+    res.json({ members });
+  } catch (err) {
+    console.error("Gym members fetch error", err);
+    res.status(500).json({ error: "Failed to load members" });
+  }
+});
+
+app.post("/api/subscriptions/:id/cancel", async (req, res) => {
+  const inputId = req.params.id;
+
+  try {
+    const resolved = await resolveSubscriptionId(inputId);
+    if (!resolved) {
+      return res.status(404).json({
+        error: `Could not find a subscription for "${inputId}" - checked it as both a subscription ID and an order ID`,
+      });
+    }
+
+    const response = await fetch(
+      `${FASTSPRING_API_BASE}/subscriptions/${resolved.subscriptionId}`,
+      { method: "DELETE", headers: { Authorization: authHeader } },
+    );
+    const data = await response.json();
+    const result = data.subscriptions?.[0];
+    if (!response.ok || result?.result !== "success") {
+      console.error("Canceling subscription failed", data);
+      return res
+        .status(502)
+        .json({ error: "Cancel failed", details: result || data });
+    }
+
+    res.json({
+      subscription: resolved.subscriptionId,
+      result: "success",
+      resolvedFrom: resolved.resolvedFrom,
+    });
+  } catch (err) {
+    console.error("Subscription cancel error", err);
+    res.status(500).json({ error: "Failed to cancel subscription" });
   }
 });
 
