@@ -42,9 +42,6 @@ const DEFAULT_CHECKOUT_PATH = "components-gaming";
 // is treated as part of the storefront catalog - no path list to maintain.
 const CATALOG_SKU = "GAME";
 
-// The gym demo has exactly one Managed Subscription product.
-const GYM_PRODUCT_PATH = "gym-as-you-go";
-
 const app = express();
 
 function chunk(items, size) {
@@ -340,18 +337,26 @@ app.post("/api/subscriptions/:id/charge", async (req, res) => {
   }
 });
 
-// Admin member list - every gym subscription plus its account contact info
-// (subscriptions don't carry the customer's email/name directly, only an
-// account ID, so this is a list call followed by a bulk account lookup).
-app.get("/api/gym/members", async (req, res) => {
+// Admin member list - every subscription for the given product plus its
+// account contact info (subscriptions don't carry the customer's email/name
+// directly, only an account ID, so this is a list call followed by a bulk
+// account lookup). Shared across every admin panel (gym, thrift, ...) -
+// each just passes its own product path, so this stays in one place rather
+// than duplicating the account-lookup logic per admin panel.
+app.get("/api/members", async (req, res) => {
+  const product = req.query.product;
+  if (!product) {
+    return res.status(400).json({ error: "product query param is required" });
+  }
+
   try {
     const subsResponse = await fetch(
-      `${FASTSPRING_API_BASE}/subscriptions?products=${GYM_PRODUCT_PATH}&scope=test`,
+      `${FASTSPRING_API_BASE}/subscriptions?products=${product}&scope=test`,
       { headers: { Authorization: authHeader } },
     );
     const subsData = await subsResponse.json();
     if (!subsResponse.ok) {
-      console.error("Listing gym subscriptions failed", subsData);
+      console.error("Listing subscriptions failed", subsData);
       return res
         .status(502)
         .json({ error: "Failed to list subscriptions", details: subsData });
@@ -397,7 +402,7 @@ app.get("/api/gym/members", async (req, res) => {
 
     res.json({ members });
   } catch (err) {
-    console.error("Gym members fetch error", err);
+    console.error("Members fetch error", err);
     res.status(500).json({ error: "Failed to load members" });
   }
 });

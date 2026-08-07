@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Thrift Admin — Manage Ticket Holders</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Set the theme before first paint so there's no flash of the wrong theme. -->
+    <script>
+      (function () {
+        var stored = localStorage.getItem("nova-theme");
+        var theme =
+          stored ||
+          (window.matchMedia("(prefers-color-scheme: light)").matches
+            ? "light"
+            : "dark");
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+
+    <link rel="stylesheet" href="styles.css" />
+
+    <!-- Matches thrift.html's warm palette instead of NOVA/FlexFit's blue. -->
+    <style>
+      :root {
+        --bg: #1c1712;
+        --bg-elevated: #241d16;
+        --bg-card: #241d16;
+        --border: #3a2f22;
+        --text: #f3ead8;
+        --text-dim: #b3a488;
+        --accent: #d98c3f;
+        --accent-2: #8fae6b;
+        --success: #7db66b;
+        --danger: #d9704f;
+        --header-bg: rgba(28, 23, 18, 0.85);
+      }
+
+      :root[data-theme="light"] {
+        --bg: #f6f1e7;
+        --bg-elevated: #fffaf0;
+        --bg-card: #fffaf0;
+        --border: #e3d5b8;
+        --text: #2e2116;
+        --text-dim: #7a6a52;
+        --accent: #b5651d;
+        --accent-2: #6e7f4f;
+        --success: #4d7c4d;
+        --danger: #b3452c;
+        --header-bg: rgba(255, 250, 240, 0.85);
+      }
+
+      .logo {
+        font-family: Georgia, "Times New Roman", serif;
+        letter-spacing: 0.04em;
+      }
+
+      .hero {
+        background:
+          radial-gradient(
+            circle at 15% 20%,
+            rgba(217, 140, 63, 0.18),
+            transparent 55%
+          ),
+          radial-gradient(
+            circle at 85% 0%,
+            rgba(143, 174, 107, 0.16),
+            transparent 55%
+          );
+      }
+
+      .hero h1 {
+        font-family: Georgia, "Times New Roman", serif;
+        font-weight: 700;
+      }
+    </style>
+  </head>
+
+  <body>
+    <script type="module" src="admin-theme.js"></script>
+
+    <header>
+      <div class="logo">THRIFT<span>Staff Admin</span></div>
+      <div style="display: flex; align-items: center; gap: 0.8rem;">
+        <a href="thrift.html" class="admin-link">← Customer signup</a>
+        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme"></button>
+      </div>
+    </header>
+
+    <div class="hero">
+      <h1>Manage ticket holders</h1>
+      <p>
+        Charge a ticket holder for what they bought at the event, or cancel
+        their ticket. Nothing here is charged automatically - every charge is
+        a deliberate action against FastSpring's Managed Subscription API.
+      </p>
+    </div>
+
+    <main class="gym-layout">
+      <section class="gym-card">
+        <div class="admin-toolbar">
+          <h2>Ticket holders</h2>
+          <button id="refresh-btn" class="admin-refresh-btn">Refresh</button>
+        </div>
+        <div id="members-list"></div>
+      </section>
+    </main>
+
+    <script type="module" src="thrift-admin.js"></script>
+  </body>
+</html>

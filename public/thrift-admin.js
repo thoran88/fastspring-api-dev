@@ -28,9 +28,9 @@ function statusClass(state) {
 async function loadMembers() {
   renderLoading();
   try {
-    const res = await fetch("/api/members?product=gym-as-you-go");
+    const res = await fetch("/api/members?product=thrift-ticket");
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Failed to load members");
+    if (!res.ok) throw new Error(data.error || "Failed to load ticket holders");
     renderMembers(data.members || []);
   } catch (err) {
     renderMessage(err.message);
@@ -40,7 +40,7 @@ async function loadMembers() {
 function renderMembers(members) {
   if (members.length === 0) {
     renderMessage(
-      "No gym members yet - sign up on the customer page to create one.",
+      "No ticket holders yet - sign up on the customer page to create one.",
     );
     return;
   }
@@ -159,7 +159,7 @@ async function chargeMember(id, amount, button, resultEl) {
 }
 
 async function cancelMember(id, button, resultEl) {
-  if (!confirm("Cancel this member's subscription?")) return;
+  if (!confirm("Cancel this ticket holder's subscription?")) return;
 
   resultEl.textContent = "";
   resultEl.className = "charge-result member-result";
@@ -175,7 +175,7 @@ async function cancelMember(id, button, resultEl) {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Cancel failed");
 
-    resultEl.textContent = "Subscription canceled.";
+    resultEl.textContent = "Ticket canceled.";
     resultEl.classList.add("success");
     button.textContent = "Canceled ✓";
     setTimeout(loadMembers, 1400);

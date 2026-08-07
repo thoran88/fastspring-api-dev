@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Thrift — Get Your Free Ticket</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Set the theme before first paint so there's no flash of the wrong theme. -->
+    <script>
+      (function () {
+        var stored = localStorage.getItem("nova-theme");
+        var theme =
+          stored ||
+          (window.matchMedia("(prefers-color-scheme: light)").matches
+            ? "light"
+            : "dark");
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+
+    <link rel="stylesheet" href="styles.css" />
+
+    <!-- Same warm, secondhand-market palette as thrift.html (the popup
+         version of this store) - just overriding styles.css's vars. -->
+    <style>
+      :root {
+        --bg: #1c1712;
+        --bg-elevated: #241d16;
+        --bg-card: #241d16;
+        --border: #3a2f22;
+        --text: #f3ead8;
+        --text-dim: #b3a488;
+        --accent: #d98c3f;
+        --accent-2: #8fae6b;
+        --success: #7db66b;
+        --danger: #d9704f;
+        --header-bg: rgba(28, 23, 18, 0.85);
+      }
+
+      :root[data-theme="light"] {
+        --bg: #f6f1e7;
+        --bg-elevated: #fffaf0;
+        --bg-card: #fffaf0;
+        --border: #e3d5b8;
+        --text: #2e2116;
+        --text-dim: #7a6a52;
+        --accent: #b5651d;
+        --accent-2: #6e7f4f;
+        --success: #4d7c4d;
+        --danger: #b3452c;
+        --header-bg: rgba(255, 250, 240, 0.85);
+      }
+
+      .logo {
+        font-family: Georgia, "Times New Roman", serif;
+        letter-spacing: 0.04em;
+      }
+
+      .hero {
+        background:
+          radial-gradient(
+            circle at 15% 20%,
+            rgba(217, 140, 63, 0.18),
+            transparent 55%
+          ),
+          radial-gradient(
+            circle at 85% 0%,
+            rgba(143, 174, 107, 0.16),
+            transparent 55%
+          );
+      }
+
+      .hero h1 {
+        font-family: Georgia, "Times New Roman", serif;
+        font-weight: 700;
+      }
+
+      .ticket-card {
+        position: relative;
+        border: 2px dashed var(--border);
+        overflow: visible;
+      }
+
+      .ticket-badge {
+        position: absolute;
+        top: -12px;
+        right: 1.4rem;
+        background: var(--accent);
+        color: var(--bg-elevated);
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 0.3rem 0.7rem;
+        border-radius: 999px;
+        transform: rotate(3deg);
+      }
+
+      .ticket-price-row {
+        display: flex;
+        align-items: baseline;
+        gap: 0.5rem;
+        margin: 0.9rem 0 1.3rem;
+      }
+
+      .ticket-price {
+        font-size: 1.6rem;
+        font-weight: 800;
+        color: var(--accent);
+      }
+
+      .ticket-features {
+        list-style: none;
+        margin: 0 0 1.4rem;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        font-size: 0.88rem;
+        color: var(--text-dim);
+      }
+
+      .ticket-features li {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .ticket-features li::before {
+        content: "✂";
+        color: var(--accent-2);
+      }
+
+      /* SBL renders the real checkout iframe inside this container once
+         fastspring.builder.checkout() is called - matches the pattern in
+         ~/dev/EmbeddedCheckouts, just styled for this page. */
+      #fsc-embedded-checkout-container {
+        position: relative;
+        min-height: 0;
+        width: 100%;
+        overflow: hidden;
+      }
+
+      .payment-placeholder {
+        display: flex;
+        justify-content: center;
+        padding: 0.4rem 0 0.2rem;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- FastSpring's Embedded Checkout is an SBL feature (fastspring-builder.js),
+         not the Checkout Components SDK - a different checkout type from
+         "components-gym"/"components-gaming". Same thrift-ticket product
+         either way; charging and the admin panel don't care which checkout
+         type created the subscription. -->
+    <script type="module" src="admin-theme.js"></script>
+
+    <header>
+      <div class="logo">THRIFT<span>Pop-Up Ticketing</span></div>
+      <div style="display: flex; align-items: center; gap: 0.8rem">
+        <a href="thrift-admin.html" class="admin-link">Staff admin →</a>
+        <button
+          id="theme-toggle"
+          class="theme-toggle"
+          aria-label="Toggle theme"
+        ></button>
+      </div>
+    </header>
+
+    <div class="hero">
+      <h1>One-of-a-kind finds. Pay only for what you take home.</h1>
+      <p>
+        Entry is free - reserve your spot below. Browse the racks, fill a
+        bag, and we'll tally up what you bought and charge your card after
+        the event.
+      </p>
+    </div>
+
+    <main class="gym-layout">
+      <section class="gym-card ticket-card">
+        <div class="ticket-badge">Free entry</div>
+        <h2>Thrift Pop-Up Entry Pass</h2>
+        <p class="gym-sub">One ticket, all-day entry to the pop-up.</p>
+
+        <div class="ticket-price-row">
+          <span class="ticket-price">Free</span>
+          <span style="color: var(--text-dim); font-size: 0.85rem;"
+            >no charge today</span
+          >
+        </div>
+
+        <ul class="ticket-features">
+          <li>Racks of curated secondhand & vintage finds</li>
+          <li>Try before you buy, right there in the shop</li>
+          <li>Your card's charged after, for exactly what you picked</li>
+        </ul>
+
+        <div id="fsc-embedded-checkout-container">
+          <div class="payment-placeholder" id="payment-placeholder">
+            <button
+              class="buy-btn"
+              id="reserve-btn"
+              style="width: auto; padding: 0.6rem 1.4rem"
+            >
+              Reserve my free ticket
+            </button>
+          </div>
+          <iframe
+            id="fsc-embedded-checkout-skeleton-custom"
+            name="fsc-embedded-checkout-skeleton-custom"
+            width="0"
+            height="0"
+            style="display: none"
+            src="https://sbl.onfastspring.com/sbl/1.0.5/skeleton.html"
+          ></iframe>
+        </div>
+      </section>
+    </main>
+
+    <script
+      id="fsc-api"
+      src="https://d1f8f9xcsvx3ha.cloudfront.net/sbl/TNP-27957/fastspring-builder.js"
+      type="text/javascript"
+      data-storefront="thoran.test.qa2.onfastspring.com/embedded-thrift"
+    ></script>
+
+    <script type="module" src="thrift-embedded.js"></script>
+  </body>
+</html>
