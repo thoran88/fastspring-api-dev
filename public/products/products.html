@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Products Admin — Catalog CRUD</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Set the theme before first paint so there's no flash of the wrong theme. -->
+    <script>
+      (function () {
+        var stored = localStorage.getItem("nova-theme");
+        var theme =
+          stored ||
+          (window.matchMedia("(prefers-color-scheme: light)").matches
+            ? "light"
+            : "dark");
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+
+    <link rel="stylesheet" href="../shared/styles.css" />
+    <link rel="stylesheet" href="products.css" />
+  </head>
+
+  <body>
+    <!-- Not an integration demo like game-store/gym/thrift - this talks to
+         FastSpring's Products API directly, with no storefront in front of
+         it. Managed-subscription status still has to be toggled by hand in
+         the dashboard (Catalog -> Subscription Plans -> Pricing -> Edit) -
+         nothing in the create-or-update-products API sets that. -->
+    <script type="module" src="../shared/admin-theme.js"></script>
+
+    <header>
+      <div class="logo">CATALOG<span>Products Admin</span></div>
+      <div style="display: flex; align-items: center; gap: 0.8rem">
+        <a href="../index.html" class="admin-link">← All demos</a>
+        <button
+          id="theme-toggle"
+          class="theme-toggle"
+          aria-label="Toggle theme"
+        ></button>
+      </div>
+    </header>
+
+    <div class="hero">
+      <h1>Manage your product catalog</h1>
+      <p>
+        Create, view, update, and delete products directly against
+        FastSpring's Products API. Subscription products are created here
+        with standard fixed pricing - turning one into a Managed Subscription
+        is still a manual step in the dashboard.
+      </p>
+    </div>
+
+    <main class="gym-layout">
+      <section class="gym-card">
+        <div class="admin-toolbar">
+          <h2>Products</h2>
+          <div style="display: flex; gap: 0.6rem">
+            <button id="new-onetime-btn" class="buy-btn member-action-btn">
+              + One-time product
+            </button>
+            <button id="new-subscription-btn" class="buy-btn member-action-btn">
+              + Subscription product
+            </button>
+            <button id="refresh-btn" class="admin-refresh-btn">Refresh</button>
+          </div>
+        </div>
+        <div id="products-list"></div>
+      </section>
+    </main>
+
+    <!-- Create/edit modal - one form, adapts to one-time vs subscription via
+         the .is-subscription class on the modal itself. -->
+    <div class="modal-backdrop" id="product-modal-backdrop">
+      <div class="modal product-modal">
+        <div class="modal-main">
+          <button class="modal-close" id="product-modal-close">×</button>
+          <h2 id="product-modal-title">New product</h2>
+          <div class="error-banner" id="product-form-error"></div>
+
+          <form id="product-form">
+            <h3 class="form-section-title">Basics</h3>
+            <div class="field">
+              <label>Product path (unique ID)</label>
+              <input type="text" id="f-product" required />
+            </div>
+            <div class="field">
+              <label>Display name</label>
+              <input type="text" id="f-display" required />
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label>Price (USD)</label>
+                <input type="number" id="f-price" min="0" step="0.01" required />
+              </div>
+              <div class="field subscription-only">
+                <label>Billing interval</label>
+                <select id="f-interval">
+                  <option value="week">Week</option>
+                  <option value="month" selected>Month</option>
+                  <option value="year">Year</option>
+                </select>
+              </div>
+              <div class="field subscription-only">
+                <label>Interval length</label>
+                <input type="number" id="f-interval-length" min="1" step="1" value="1" />
+              </div>
+            </div>
+
+            <details class="advanced-fields">
+              <summary>Show every other field</summary>
+
+              <h3 class="form-section-title">Listing</h3>
+              <div class="field-row">
+                <div class="field">
+                  <label>SKU</label>
+                  <input type="text" id="f-sku" />
+                </div>
+                <div class="field">
+                  <label>Badge</label>
+                  <input type="text" id="f-badge" />
+                </div>
+                <div class="field">
+                  <label>Rank</label>
+                  <input type="number" id="f-rank" step="1" />
+                </div>
+              </div>
+              <div class="field-row">
+                <div class="field">
+                  <label>Image URL</label>
+                  <input type="text" id="f-image" />
+                </div>
+                <div class="field">
+                  <label>Format</label>
+                  <select id="f-format">
+                    <option value="">(default: digital)</option>
+                    <option value="digital">Digital</option>
+                    <option value="physical">Physical</option>
+                    <option value="digital-and-physical">Digital and physical</option>
+                    <option value="saas">SaaS</option>
+                  </select>
+                </div>
+              </div>
+              <div class="field-row">
+                <div class="field">
+                  <label>Tax category</label>
+                  <select id="f-taxcode">
+                    <option value="">(default for format above)</option>
+                    <optgroup label="Downloadable Software">
+                      <option value="DC020600">Custom Digital Tax Code</option>
+                    </optgroup>
+                    <optgroup label="Software as a Service (SaaS)">
+                      <option value="SW054002">Cloud Services - SaaS</option>
+                    </optgroup>
+                    <optgroup label="Gaming">
+                      <option value="DG010301">Gaming - Streaming Access</option>
+                    </optgroup>
+                    <optgroup label="Information & Data">
+                      <option value="SI010002">Canned Information Services - Delivered Electronically</option>
+                    </optgroup>
+                    <optgroup label="Technical Software Services">
+                      <option value="SC130101">Tech services - remote support only</option>
+                      <option value="SC130102">Tech services - downloaded updates + support</option>
+                    </optgroup>
+                    <optgroup label="Digital Goods">
+                      <option value="DA059399">Digital audio (music)</option>
+                      <option value="DV021008">Digital audio-visual works (video)</option>
+                      <option value="DP010200">Photographs</option>
+                      <option value="DB031013">Digital books</option>
+                    </optgroup>
+                  </select>
+                  <p class="field-hint">
+                    Leave as default to let FastSpring apply the standard code for
+                    the format above.
+                  </p>
+                </div>
+              </div>
+
+              <h3 class="form-section-title">Description</h3>
+              <div class="field">
+                <label>Summary</label>
+                <textarea id="f-desc-summary" rows="2"></textarea>
+              </div>
+              <div class="field">
+                <label>Action (button/link text)</label>
+                <input type="text" id="f-desc-action" />
+              </div>
+              <div class="field">
+                <label>Full description</label>
+                <textarea id="f-desc-full" rows="3"></textarea>
+              </div>
+
+              <h3 class="form-section-title">Fulfillment</h3>
+              <div class="field">
+                <label>Instructions</label>
+                <textarea id="f-fulfillment" rows="2"></textarea>
+              </div>
+
+              <h3 class="form-section-title">Attributes</h3>
+              <div class="field">
+                <label>Custom key/value pairs (JSON object)</label>
+                <textarea
+                  id="f-attributes"
+                  rows="2"
+                  placeholder='{"category": "apparel"}'
+                ></textarea>
+              </div>
+
+              <div class="subscription-only">
+                <h3 class="form-section-title">Trial</h3>
+                <div class="field-row">
+                  <div class="field">
+                    <label>Trial length (days)</label>
+                    <input type="number" id="f-trial" min="0" step="1" />
+                  </div>
+                  <div class="field">
+                    <label>Trial price (USD)</label>
+                    <input type="number" id="f-trial-price" min="0" step="0.01" />
+                  </div>
+                  <div class="field checkbox-field">
+                    <label>
+                      <input type="checkbox" id="f-paid-trial" />
+                      Requires payment method
+                    </label>
+                  </div>
+                </div>
+
+                <h3 class="form-section-title">Quantity</h3>
+                <div class="field-row">
+                  <div class="field">
+                    <label>Quantity behavior</label>
+                    <select id="f-qty-behavior">
+                      <option value="">(default)</option>
+                      <option value="allow">Allow</option>
+                      <option value="lock">Lock</option>
+                      <option value="hide">Hide</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label>Default quantity</label>
+                    <input type="number" id="f-qty-default" min="1" step="1" />
+                  </div>
+                </div>
+                <div class="field">
+                  <label>Quantity discounts (JSON object: quantity → % off)</label>
+                  <textarea
+                    id="f-qty-discounts"
+                    rows="2"
+                    placeholder='{"5": 10, "10": 20}'
+                  ></textarea>
+                </div>
+
+                <h3 class="form-section-title">Discounting</h3>
+                <div class="field-row">
+                  <div class="field">
+                    <label>Discount reason</label>
+                    <input type="text" id="f-discount-reason" />
+                  </div>
+                  <div class="field">
+                    <label>Discount duration (billing cycles)</label>
+                    <input type="number" id="f-discount-duration" min="0" step="1" />
+                  </div>
+                </div>
+
+                <h3 class="form-section-title">Reminder notification</h3>
+                <p class="field-hint">Sent before a scheduled charge.</p>
+                <div class="field-row">
+                  <div class="field checkbox-field">
+                    <label>
+                      <input type="checkbox" id="f-reminder-enabled" />
+                      Enabled
+                    </label>
+                  </div>
+                  <div class="field">
+                    <label>Interval</label>
+                    <select id="f-reminder-interval">
+                      <option value="">(default)</option>
+                      <option value="day">Day</option>
+                      <option value="week">Week</option>
+                      <option value="month">Month</option>
+                      <option value="year">Year</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label>Interval length (before charge)</label>
+                    <input type="number" id="f-reminder-length" min="1" step="1" />
+                  </div>
+                </div>
+
+                <h3 class="form-section-title">Overdue notification</h3>
+                <p class="field-hint">Sent after a failed payment.</p>
+                <div class="field-row">
+                  <div class="field checkbox-field">
+                    <label>
+                      <input type="checkbox" id="f-overdue-enabled" />
+                      Enabled
+                    </label>
+                  </div>
+                  <div class="field">
+                    <label>Interval</label>
+                    <select id="f-overdue-interval">
+                      <option value="">(default)</option>
+                      <option value="day">Day</option>
+                      <option value="week">Week</option>
+                      <option value="month">Month</option>
+                      <option value="year">Year</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label>Interval length (after failure)</label>
+                    <input type="number" id="f-overdue-length" min="1" step="1" />
+                  </div>
+                </div>
+
+                <h3 class="form-section-title">Cancellation / deactivation window</h3>
+                <p class="field-hint">
+                  Grace period before an overdue subscription auto-deactivates.
+                </p>
+                <div class="field-row">
+                  <div class="field">
+                    <label>Interval</label>
+                    <select id="f-cancellation-interval">
+                      <option value="">(default)</option>
+                      <option value="day">Day</option>
+                      <option value="week">Week</option>
+                      <option value="month">Month</option>
+                    </select>
+                  </div>
+                  <div class="field">
+                    <label>Interval length</label>
+                    <input type="number" id="f-cancellation-length" min="1" step="1" />
+                  </div>
+                </div>
+              </div>
+            </details>
+
+            <button type="submit" class="continue-btn" id="product-form-submit" style="margin-top: 1rem;">
+              Save product
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="products.js"></script>
+  </body>
+</html>

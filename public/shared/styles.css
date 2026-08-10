@@ -382,12 +382,14 @@ header {
 
 .field-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.8rem;
   margin-bottom: 0.8rem;
 }
 
 .field {
   flex: 1;
+  min-width: 140px;
 }
 
 .field label {
@@ -397,7 +399,8 @@ header {
   margin-bottom: 0.3rem;
 }
 
-.field input {
+.field input,
+.field select {
   width: 100%;
   padding: 0.55rem 0.7rem;
   border-radius: 8px;
@@ -405,9 +408,38 @@ header {
   background: var(--bg-card);
   color: var(--text);
   font-size: 0.9rem;
+  font-family: inherit;
+  accent-color: var(--accent);
 }
 
-.field input:focus {
+.field select {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) center,
+    calc(100% - 13px) center;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  color: var(--text);
+  padding-right: 2rem;
+}
+
+.field select option,
+.field select optgroup {
+  background: var(--bg-card);
+  color: var(--text);
+}
+
+.field input[type="checkbox"] {
+  width: auto;
+  padding: 0;
+  border-radius: 4px;
+  margin: 0;
+}
+
+.field input:focus,
+.field select:focus {
   outline: none;
   border-color: var(--accent);
 }

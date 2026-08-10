@@ -54,56 +54,52 @@ function chunk(items, size) {
 
 // Raw body needed here for signature verification - must be registered
 // before express.json() below, and only applies to this one path.
-app.post(
-  "/webhooks",
-  express.raw({ type: "application/json" }),
-  (req, res) => {
-    const signature = req.get("x-fs-signature");
-    if (!signature) {
-      return res.status(400).send("Missing X-FS-Signature header");
+app.post("/webhooks", express.raw({ type: "application/json" }), (req, res) => {
+  const signature = req.get("x-fs-signature");
+  if (!signature) {
+    return res.status(400).send("Missing X-FS-Signature header");
+  }
+
+  const expected = crypto
+    .createHmac("sha256", FASTSPRING_WEBHOOK_SECRET)
+    .update(req.body)
+    .digest("base64");
+
+  const signatureBuf = Buffer.from(signature, "base64");
+  const expectedBuf = Buffer.from(expected, "base64");
+  const valid =
+    signatureBuf.length === expectedBuf.length &&
+    crypto.timingSafeEqual(signatureBuf, expectedBuf);
+
+  if (!valid) {
+    console.warn("Webhook signature mismatch - rejecting");
+    return res.status(401).send("Invalid signature");
+  }
+
+  let payload;
+  try {
+    payload = JSON.parse(req.body.toString("utf8"));
+  } catch {
+    return res.status(400).send("Invalid JSON");
+  }
+
+  // FastSpring can batch multiple events per POST and may redeliver the
+  // same event more than once - dedupe on event.id if you persist these.
+  for (const event of payload.events ?? []) {
+    console.log(`Webhook event: ${event.type} (${event.id})`, event.data);
+
+    // order.completed doesn't include a subscription ID - this is the
+    // one reliable place to find it, since it's the subscription object
+    // itself (data.id, with a legacy "subscription" alias for the same).
+    if (event.type === "subscription.activated") {
+      console.log(
+        `  -> subscription.activated: id=${event.data?.id} account=${event.data?.account}`,
+      );
     }
+  }
 
-    const expected = crypto
-      .createHmac("sha256", FASTSPRING_WEBHOOK_SECRET)
-      .update(req.body)
-      .digest("base64");
-
-    const signatureBuf = Buffer.from(signature, "base64");
-    const expectedBuf = Buffer.from(expected, "base64");
-    const valid =
-      signatureBuf.length === expectedBuf.length &&
-      crypto.timingSafeEqual(signatureBuf, expectedBuf);
-
-    if (!valid) {
-      console.warn("Webhook signature mismatch - rejecting");
-      return res.status(401).send("Invalid signature");
-    }
-
-    let payload;
-    try {
-      payload = JSON.parse(req.body.toString("utf8"));
-    } catch {
-      return res.status(400).send("Invalid JSON");
-    }
-
-    // FastSpring can batch multiple events per POST and may redeliver the
-    // same event more than once - dedupe on event.id if you persist these.
-    for (const event of payload.events ?? []) {
-      console.log(`Webhook event: ${event.type} (${event.id})`, event.data);
-
-      // order.completed doesn't include a subscription ID - this is the
-      // one reliable place to find it, since it's the subscription object
-      // itself (data.id, with a legacy "subscription" alias for the same).
-      if (event.type === "subscription.activated") {
-        console.log(
-          `  -> subscription.activated: id=${event.data?.id} account=${event.data?.account}`,
-        );
-      }
-    }
-
-    res.sendStatus(200);
-  },
-);
+  res.sendStatus(200);
+});
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
@@ -224,14 +220,140 @@ app.get("/api/products", async (req, res) => {
   }
 });
 
+// Products CRUD admin tool - a separate, standalone piece from the
+// storefront demos above. Wraps FastSpring's real /products endpoints
+// directly (no SKU filtering, no catalog concept) so the admin UI can
+// create, list, view, update, and delete any product on the account.
+app.get("/api/admin/products", async (req, res) => {
+  try {
+    const listResponse = await fetch(`${FASTSPRING_API_BASE}/products`, {
+      headers: { Authorization: authHeader },
+    });
+    const listData = await listResponse.json();
+    if (!listResponse.ok) {
+      console.error("Product list fetch failed", listData);
+      return res
+        .status(502)
+        .json({ error: "Failed to list products", details: listData });
+    }
+
+    const allPaths = Array.isArray(listData.products) ? listData.products : [];
+    if (allPaths.length === 0) {
+      return res.json({ products: [] });
+    }
+
+    const products = [];
+    for (const batch of chunk(allPaths, 50)) {
+      const detailResponse = await fetch(
+        `${FASTSPRING_API_BASE}/products/${batch.join(",")}`,
+        { headers: { Authorization: authHeader } },
+      );
+      const detailData = await detailResponse.json();
+      if (!detailResponse.ok) {
+        console.error("Product detail fetch failed", detailData);
+        continue;
+      }
+      const items = Array.isArray(detailData.products)
+        ? detailData.products
+        : [detailData];
+      products.push(...items.filter((p) => p && p.product));
+    }
+
+    res.json({ products });
+  } catch (err) {
+    console.error("Admin products fetch error", err);
+    res.status(500).json({ error: "Failed to load products" });
+  }
+});
+
+app.get("/api/admin/products/:path", async (req, res) => {
+  try {
+    const response = await fetch(
+      `${FASTSPRING_API_BASE}/products/${req.params.path}`,
+      { headers: { Authorization: authHeader } },
+    );
+    const data = await response.json();
+    if (!response.ok) {
+      console.error("Product fetch failed", data);
+      return res
+        .status(502)
+        .json({ error: "Failed to load product", details: data });
+    }
+    res.json(data);
+  } catch (err) {
+    console.error("Admin product fetch error", err);
+    res.status(500).json({ error: "Failed to load product" });
+  }
+});
+
+// Create and update share one endpoint on FastSpring's side - a product
+// path that doesn't exist yet gets created, an existing one gets updated.
+app.post("/api/admin/products", async (req, res) => {
+  const product = req.body?.product;
+  if (!product || !product.product) {
+    return res
+      .status(400)
+      .json({ error: "product.product (the product path) is required" });
+  }
+
+  try {
+    const response = await fetch(`${FASTSPRING_API_BASE}/products`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: authHeader,
+      },
+      body: JSON.stringify({ products: [product] }),
+    });
+    const data = await response.json();
+    const result = data.products?.[0];
+    if (!response.ok || result?.result !== "success") {
+      console.error("Product create/update failed", data);
+      return res.status(502).json({
+        error: "Failed to save product",
+        details: result || data,
+      });
+    }
+    res.json(result);
+  } catch (err) {
+    console.error("Admin product save error", err);
+    res.status(500).json({ error: "Failed to save product" });
+  }
+});
+
+app.delete("/api/admin/products/:path", async (req, res) => {
+  try {
+    const response = await fetch(
+      `${FASTSPRING_API_BASE}/products/${req.params.path}`,
+      { method: "DELETE", headers: { Authorization: authHeader } },
+    );
+    const data = await response.json();
+    const result = data.products?.[0];
+    if (!response.ok || result?.result !== "success") {
+      console.error("Product delete failed", data);
+      return res.status(502).json({
+        error: "Failed to delete product",
+        details: result || data,
+      });
+    }
+    res.json(result);
+  } catch (err) {
+    console.error("Admin product delete error", err);
+    res.status(500).json({ error: "Failed to delete product" });
+  }
+});
+
 // Order IDs and subscription IDs are both opaque strings that show up next
 // to each other in the dashboard, so pasting the wrong one is an easy
 // mistake to make. If the given ID isn't a subscription, check whether it's
 // actually an order and use *its* subscription instead of just failing.
 async function resolveSubscriptionId(id) {
-  const subResponse = await fetch(`${FASTSPRING_API_BASE}/subscriptions/${id}`, {
-    headers: { Authorization: authHeader },
-  });
+  const subResponse = await fetch(
+    `${FASTSPRING_API_BASE}/subscriptions/${id}`,
+    {
+      headers: { Authorization: authHeader },
+    },
+  );
   const subData = await subResponse.json();
   if (subResponse.ok && subData.result === "success") {
     return { subscriptionId: id, resolvedFrom: "subscription" };
@@ -264,9 +386,7 @@ app.post("/api/subscriptions/:id/charge", async (req, res) => {
     return res.status(400).json({ error: "subscription id is required" });
   }
   if (!Number.isFinite(amount) || amount <= 0) {
-    return res
-      .status(400)
-      .json({ error: "amount must be a positive number" });
+    return res.status(400).json({ error: "amount must be a positive number" });
   }
 
   try {

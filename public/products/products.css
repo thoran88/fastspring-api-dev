@@ -1,0 +1,115 @@
+/* Products admin - CRUD list + create/edit modal. Reuses shared/styles.css
+   for layout primitives (.gym-layout, .gym-card, .modal, .field, ...) and
+   only adds what's specific to this page. */
+
+.product-modal {
+  max-width: 640px;
+}
+
+.form-section-title {
+  margin: 1.6rem 0 0.7rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+}
+
+#product-form > .form-section-title:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.field-hint {
+  margin: -0.2rem 0 0.7rem;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+
+textarea {
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text);
+  font-size: 0.9rem;
+  font-family: inherit;
+  resize: vertical;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.checkbox-field {
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 0.55rem;
+}
+
+.checkbox-field label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--text);
+  font-size: 0.85rem;
+  margin-bottom: 0;
+}
+
+.advanced-fields summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-top: 0.4rem;
+  padding: 0.3rem 0;
+}
+
+/* Hidden by default (one-time product) - the .is-subscription class on the
+   modal reveals these, added/removed when switching create modes. */
+.subscription-only {
+  display: none;
+}
+
+.product-modal.is-subscription .subscription-only {
+  display: block;
+}
+
+.product-modal.is-subscription .field.subscription-only {
+  display: flex;
+}
+
+.product-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.product-row:last-child {
+  border-bottom: none;
+}
+
+.product-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.product-meta {
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  margin-top: 0.2rem;
+}
+
+.product-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
