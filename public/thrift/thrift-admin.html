@@ -18,7 +18,7 @@
       })();
     </script>
 
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="../shared/styles.css" />
 
     <!-- Matches thrift.html's warm palette instead of NOVA/FlexFit's blue. -->
     <style>
@@ -77,11 +77,12 @@
   </head>
 
   <body>
-    <script type="module" src="admin-theme.js"></script>
+    <script type="module" src="../shared/admin-theme.js"></script>
 
     <header>
       <div class="logo">THRIFT<span>Staff Admin</span></div>
       <div style="display: flex; align-items: center; gap: 0.8rem;">
+        <a href="../index.html" class="admin-link">← All demos</a>
         <a href="thrift.html" class="admin-link">← Customer signup</a>
         <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme"></button>
       </div>

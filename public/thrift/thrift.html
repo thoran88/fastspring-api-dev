@@ -18,10 +18,12 @@
       })();
     </script>
 
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="../shared/styles.css" />
 
-    <!-- Same warm, secondhand-market palette as thrift.html (the popup
-         version of this store) - just overriding styles.css's vars. -->
+    <!-- This storefront gets its own warm, secondhand-market palette rather
+         than reusing NOVA/FlexFit's blue theme - same CSS variables, just
+         overridden here so the rest of styles.css (layout, buttons, fields)
+         still works unchanged. -->
     <style>
       :root {
         --bg: #1c1712;
@@ -129,36 +131,19 @@
         content: "✂";
         color: var(--accent-2);
       }
-
-      /* SBL renders the real checkout iframe inside this container once
-         fastspring.builder.checkout() is called - matches the pattern in
-         ~/dev/EmbeddedCheckouts, just styled for this page. */
-      #fsc-embedded-checkout-container {
-        position: relative;
-        min-height: 0;
-        width: 100%;
-        overflow: hidden;
-      }
-
-      .payment-placeholder {
-        display: flex;
-        justify-content: center;
-        padding: 0.4rem 0 0.2rem;
-      }
     </style>
   </head>
 
   <body>
-    <!-- FastSpring's Embedded Checkout is an SBL feature (fastspring-builder.js),
-         not the Checkout Components SDK - a different checkout type from
-         "components-gym"/"components-gaming". Same thrift-ticket product
-         either way; charging and the admin panel don't care which checkout
-         type created the subscription. -->
-    <script type="module" src="admin-theme.js"></script>
+    <!-- Pure SBL popup checkout - no backend involved in signup itself.
+         Charging happens later via the admin panel (server-side API). -->
+    <script type="module" src="../shared/admin-theme.js"></script>
 
     <header>
       <div class="logo">THRIFT<span>Pop-Up Ticketing</span></div>
       <div style="display: flex; align-items: center; gap: 0.8rem">
+        <a href="../index.html" class="admin-link">← All demos</a>
+        <a href="thrift-embedded.html" class="admin-link">Try embedded →</a>
         <a href="thrift-admin.html" class="admin-link">Staff admin →</a>
         <button
           id="theme-toggle"
@@ -180,11 +165,24 @@
     <main class="gym-layout">
       <section class="gym-card ticket-card">
         <div class="ticket-badge">Free entry</div>
-        <h2>Thrift Pop-Up Entry Pass</h2>
-        <p class="gym-sub">One ticket, all-day entry to the pop-up.</p>
+        <h2 data-fsc-item-path="thrift-ticket" data-fsc-item-display>
+          Thrift Pop-Up Entry Pass
+        </h2>
+        <p
+          class="gym-sub"
+          data-fsc-item-path="thrift-ticket"
+          data-fsc-item-description-summary
+        >
+          One ticket, all-day entry to the pop-up.
+        </p>
 
         <div class="ticket-price-row">
-          <span class="ticket-price">Free</span>
+          <span
+            class="ticket-price"
+            data-fsc-item-path="thrift-ticket"
+            data-fsc-item-price
+            >Free</span
+          >
           <span style="color: var(--text-dim); font-size: 0.85rem;"
             >no charge today</span
           >
@@ -196,25 +194,14 @@
           <li>Your card's charged after, for exactly what you picked</li>
         </ul>
 
-        <div id="fsc-embedded-checkout-container">
-          <div class="payment-placeholder" id="payment-placeholder">
-            <button
-              class="buy-btn"
-              id="reserve-btn"
-              style="width: auto; padding: 0.6rem 1.4rem"
-            >
-              Reserve my free ticket
-            </button>
-          </div>
-          <iframe
-            id="fsc-embedded-checkout-skeleton-custom"
-            name="fsc-embedded-checkout-skeleton-custom"
-            width="0"
-            height="0"
-            style="display: none"
-            src="https://sbl.onfastspring.com/sbl/1.0.5/skeleton.html"
-          ></iframe>
-        </div>
+        <button
+          class="buy-btn"
+          style="width: auto; padding: 0.6rem 1.4rem;"
+          data-fsc-item-path-value="thrift-ticket"
+          data-fsc-action="Reset, Add, Checkout"
+        >
+          Reserve my free ticket
+        </button>
       </section>
     </main>
 
@@ -222,9 +209,7 @@
       id="fsc-api"
       src="https://d1f8f9xcsvx3ha.cloudfront.net/sbl/TNP-27957/fastspring-builder.js"
       type="text/javascript"
-      data-storefront="thoran.test.qa2.onfastspring.com/embedded-thrift"
+      data-storefront="thoran.test.qa2.onfastspring.com/popup-thrift"
     ></script>
-
-    <script type="module" src="thrift-embedded.js"></script>
   </body>
 </html>

@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>NOVA — Digital Game Store</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Set the theme before first paint so there's no flash of the wrong theme. -->
+    <script>
+      (function () {
+        var stored = localStorage.getItem("nova-theme");
+        var theme =
+          stored ||
+          (window.matchMedia("(prefers-color-scheme: light)").matches
+            ? "light"
+            : "dark");
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+
+    <script src="https://cdn.onfastspring.com/checkout-sdk/latest/fastspring-sdk.js"></script>
+    <link rel="stylesheet" href="../shared/styles.css" />
+
+  </head>
+
+  <body>
+    <!-- FastSpring SDK init + component mounting -->
+    <script type="module" src="fs-sdk.js"></script>
+    <script type="module" src="fs-components.js"></script>
+    <script type="module" src="theme.js"></script>
+
+    <header>
+      <div class="logo">NOVA<span>Digital Game Store</span></div>
+      <div style="display: flex; align-items: center; gap: 0.8rem;">
+        <a href="../index.html" class="admin-link">← All demos</a>
+        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme"></button>
+      </div>
+    </header>
+
+    <div class="hero">
+      <h1>Your next favorite game is one click away.</h1>
+      <p>
+        Instant delivery, secure checkout, play today. Browse the catalog below
+        and grab a title.
+      </p>
+    </div>
+
+    <div class="section-title">Popular right now</div>
+    <div class="game-grid" id="game-grid"></div>
+
+    <!-- Checkout modal -->
+    <div class="modal-backdrop" id="modal-backdrop">
+      <div class="modal">
+        <div class="modal-main">
+          <button class="modal-close" id="modal-close" aria-label="Close">
+            &times;
+          </button>
+
+          <div class="order-summary">
+            <div class="order-title" id="modal-title"></div>
+            <div class="order-price" id="modal-price"></div>
+          </div>
+
+          <!-- Checkout form -->
+          <div id="checkout-view">
+            <div class="field-row">
+              <div class="field">
+                <label>First name</label>
+                <input type="text" id="fname" value="Test" />
+              </div>
+              <div class="field">
+                <label>Last name</label>
+                <input type="text" id="lname" value="Buyer" />
+              </div>
+            </div>
+            <div class="field">
+              <label>Email</label>
+              <input type="email" id="email" />
+            </div>
+
+            <div class="components-wrap is-loading" id="components-wrap">
+              <div class="component-skeleton">
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line" style="height: 48px"></div>
+                <div class="skeleton-line short"></div>
+              </div>
+              <div id="card-element"></div>
+              <div id="pay-button-element"></div>
+              <div id="disclosures-element"></div>
+            </div>
+
+            <div class="error-banner" id="error-banner"></div>
+          </div>
+
+          <!-- Success view -->
+          <div class="success-screen" id="success-view">
+            <svg class="check-circle" viewBox="0 0 58 58">
+              <circle cx="29" cy="29" r="26"></circle>
+              <path d="M17 30l8 8 16-18"></path>
+            </svg>
+            <h2>Order confirmed</h2>
+            <p id="success-sub"></p>
+            <div class="receipt" id="receipt"></div>
+            <button class="continue-btn" id="continue-btn">
+              Continue shopping
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="store.js"></script>
+  </body>
+</html>

@@ -2,10 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>NOVA — Digital Game Store</title>
+    <title>FastSpring Integration Demos</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <!-- Set the theme before first paint so there's no flash of the wrong theme. -->
     <script>
       (function () {
         var stored = localStorage.getItem("nova-theme");
@@ -18,95 +17,98 @@
       })();
     </script>
 
-    <script src="https://cdn.onfastspring.com/checkout-sdk/latest/fastspring-sdk.js"></script>
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="shared/styles.css" />
 
+    <style>
+      .demo-grid {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 0 3rem 4rem;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1.4rem;
+      }
+
+      .demo-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 1.4rem 1.5rem;
+      }
+
+      .demo-card h2 {
+        margin: 0 0 0.4rem;
+        font-size: 1.05rem;
+      }
+
+      .demo-card p {
+        margin: 0 0 1rem;
+        color: var(--text-dim);
+        font-size: 0.85rem;
+      }
+
+      .demo-card a {
+        display: block;
+        color: var(--accent);
+        font-size: 0.85rem;
+        text-decoration: none;
+        margin-bottom: 0.35rem;
+      }
+
+      .demo-card a:hover {
+        text-decoration: underline;
+      }
+    </style>
   </head>
 
   <body>
-    <!-- FastSpring SDK init + component mounting -->
-    <script type="module" src="fs-sdk.js"></script>
-    <script type="module" src="fs-components.js"></script>
-    <script type="module" src="theme.js"></script>
-
     <header>
-      <div class="logo">NOVA<span>Digital Game Store</span></div>
-      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme"></button>
+      <div class="logo">FASTSPRING<span>Integration Demos</span></div>
+      <button
+        id="theme-toggle"
+        class="theme-toggle"
+        aria-label="Toggle theme"
+      ></button>
     </header>
 
     <div class="hero">
-      <h1>Your next favorite game is one click away.</h1>
+      <h1>Pick a demo</h1>
       <p>
-        Instant delivery, secure checkout, play today. Browse the catalog below
-        and grab a title.
+        Three integrations, three checkout approaches - Checkout Components
+        and Store Builder Library (popup + embedded), all against real
+        FastSpring products.
       </p>
     </div>
 
-    <div class="section-title">Popular right now</div>
-    <div class="game-grid" id="game-grid"></div>
-
-    <!-- Checkout modal -->
-    <div class="modal-backdrop" id="modal-backdrop">
-      <div class="modal">
-        <div class="modal-main">
-          <button class="modal-close" id="modal-close" aria-label="Close">
-            &times;
-          </button>
-
-          <div class="order-summary">
-            <div class="order-title" id="modal-title"></div>
-            <div class="order-price" id="modal-price"></div>
-          </div>
-
-          <!-- Checkout form -->
-          <div id="checkout-view">
-            <div class="field-row">
-              <div class="field">
-                <label>First name</label>
-                <input type="text" id="fname" value="Test" />
-              </div>
-              <div class="field">
-                <label>Last name</label>
-                <input type="text" id="lname" value="Buyer" />
-              </div>
-            </div>
-            <div class="field">
-              <label>Email</label>
-              <input type="email" id="email" />
-            </div>
-
-            <div class="components-wrap is-loading" id="components-wrap">
-              <div class="component-skeleton">
-                <div class="skeleton-line"></div>
-                <div class="skeleton-line"></div>
-                <div class="skeleton-line" style="height: 48px"></div>
-                <div class="skeleton-line short"></div>
-              </div>
-              <div id="card-element"></div>
-              <div id="pay-button-element"></div>
-              <div id="disclosures-element"></div>
-            </div>
-
-            <div class="error-banner" id="error-banner"></div>
-          </div>
-
-          <!-- Success view -->
-          <div class="success-screen" id="success-view">
-            <svg class="check-circle" viewBox="0 0 58 58">
-              <circle cx="29" cy="29" r="26"></circle>
-              <path d="M17 30l8 8 16-18"></path>
-            </svg>
-            <h2>Order confirmed</h2>
-            <p id="success-sub"></p>
-            <div class="receipt" id="receipt"></div>
-            <button class="continue-btn" id="continue-btn">
-              Continue shopping
-            </button>
-          </div>
-        </div>
+    <main class="demo-grid">
+      <div class="demo-card">
+        <h2>NOVA Game Store</h2>
+        <p>One-time purchases via Checkout Components (components-gaming).</p>
+        <a href="game-store/index.html">Open store →</a>
       </div>
-    </div>
 
-    <script type="module" src="store.js"></script>
+      <div class="demo-card">
+        <h2>FlexFit Gym</h2>
+        <p>
+          Pay-as-you-go Managed Subscription via Checkout Components
+          (components-gym).
+        </p>
+        <a href="gym/gym.html">Customer signup →</a>
+        <a href="gym/gym-admin.html">Staff admin →</a>
+      </div>
+
+      <div class="demo-card">
+        <h2>Thrift Pop-Up</h2>
+        <p>
+          Free-ticket Managed Subscription via SBL - popup and embedded
+          checkout, same product either way.
+        </p>
+        <a href="thrift/thrift.html">Popup signup →</a>
+        <a href="thrift/thrift-embedded.html">Embedded signup →</a>
+        <a href="thrift/thrift-admin.html">Staff admin →</a>
+      </div>
+    </main>
+
+    <script type="module" src="shared/admin-theme.js"></script>
   </body>
 </html>
