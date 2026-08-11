@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Quotes & Invoices — B2B Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Set the theme before first paint so there's no flash of the wrong theme. -->
+    <script>
+      (function () {
+        var stored = localStorage.getItem("nova-theme");
+        var theme =
+          stored ||
+          (window.matchMedia("(prefers-color-scheme: light)").matches
+            ? "light"
+            : "dark");
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+
+    <link rel="stylesheet" href="../shared/styles.css" />
+    <link rel="stylesheet" href="../products/products.css" />
+  </head>
+
+  <body>
+    <!-- Two fully separate B2B tools, not a wizard - a quote already leads
+         to its own payable/invoice flow once the buyer opens it (or a
+         seller converts it by hand in the FastSpring app), so chaining our
+         own "generate invoice" step onto quote creation was redundant.
+         Invoice creation here is the standalone Invoice API, unrelated to
+         whatever quote (if any) a customer came from. -->
+    <script type="module" src="../shared/admin-theme.js"></script>
+
+    <header>
+      <div class="logo">B2B<span>Quotes & Invoices</span></div>
+      <div style="display: flex; align-items: center; gap: 0.8rem">
+        <a href="../index.html" class="admin-link">← All demos</a>
+        <button
+          id="theme-toggle"
+          class="theme-toggle"
+          aria-label="Toggle theme"
+        ></button>
+      </div>
+    </header>
+
+    <div class="hero">
+      <h1>Quotes & Invoices</h1>
+      <p>
+        Two separate FastSpring APIs. A quote already generates its own
+        invoice once the buyer opens and pays it - use the invoice tool
+        below only when you want to create a payable invoice directly,
+        with no quote involved.
+      </p>
+    </div>
+
+    <main class="gym-layout">
+      <section class="gym-card" id="quote-card">
+        <h2>Create a quote</h2>
+        <p class="gym-sub">
+          Produces a shareable, payable quote page - the buyer can already
+          pay there directly if you just need that.
+        </p>
+
+        <div class="field">
+          <label>Quote name</label>
+          <input type="text" id="q-name" placeholder="Acme Corp - annual license" />
+        </div>
+
+        <h3 class="form-section-title">Customer</h3>
+        <div class="field-row">
+          <div class="field">
+            <label>First name</label>
+            <input type="text" id="q-first" />
+          </div>
+          <div class="field">
+            <label>Last name</label>
+            <input type="text" id="q-last" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="q-email" placeholder="buyer@example.com" />
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Country (2-letter code)</label>
+            <input type="text" id="q-country" value="US" maxlength="2" />
+          </div>
+          <div class="field">
+            <label>Postal code</label>
+            <input type="text" id="q-postal" />
+          </div>
+        </div>
+
+        <h3 class="form-section-title">Line item</h3>
+        <div class="field-row">
+          <div class="field">
+            <label>Product path</label>
+            <input type="text" id="q-product" placeholder="tennis-court-booking" />
+          </div>
+          <div class="field">
+            <label>Quantity</label>
+            <input type="number" id="q-quantity" value="1" min="1" step="1" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Notes (optional)</label>
+          <textarea id="q-notes" rows="2"></textarea>
+        </div>
+
+        <button class="buy-btn" id="create-quote-btn" style="width: auto; padding: 0.6rem 1.4rem;">
+          Create quote
+        </button>
+        <div class="error-banner" id="quote-error"></div>
+
+        <div id="quote-result" style="display: none; margin-top: 1.2rem;">
+          <div class="success-banner">
+            <strong>Quote created.</strong>
+            <p id="quote-result-summary"></p>
+            <a href="#" id="quote-url-link" target="_blank" rel="noopener">Open the quote →</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="gym-card" id="invoice-card">
+        <h2>Create an invoice</h2>
+        <p class="gym-sub">
+          Standalone Invoice API call - no quote involved. Produces a
+          payable invoice directly.
+        </p>
+
+        <h3 class="form-section-title">Customer</h3>
+        <div class="field-row">
+          <div class="field">
+            <label>First name</label>
+            <input type="text" id="i-first" />
+          </div>
+          <div class="field">
+            <label>Last name</label>
+            <input type="text" id="i-last" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="i-email" placeholder="buyer@example.com" />
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Country (2-letter code)</label>
+            <input type="text" id="i-country" value="US" maxlength="2" />
+          </div>
+          <div class="field">
+            <label>Postal code</label>
+            <input type="text" id="i-postal" />
+          </div>
+        </div>
+
+        <h3 class="form-section-title">Line item</h3>
+        <div class="field-row">
+          <div class="field">
+            <label>Product path</label>
+            <input type="text" id="i-product" placeholder="tennis-court-booking" />
+          </div>
+          <div class="field">
+            <label>Quantity</label>
+            <input type="number" id="i-quantity" value="1" min="1" step="1" />
+          </div>
+        </div>
+
+        <h3 class="form-section-title">Payment</h3>
+        <div class="field-row">
+          <div class="field">
+            <label>Currency</label>
+            <select id="i-currency">
+              <option value="USD">USD</option>
+              <option value="EUR">EUR</option>
+              <option value="GBP">GBP</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Payment method</label>
+            <select id="i-payment-method">
+              <option value="CARD">Card</option>
+              <option value="PAYPAL">PayPal</option>
+              <option value="WIRE">Wire</option>
+              <option value="ACH">ACH</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Mode</label>
+            <select id="i-mode">
+              <option value="TEST">Test</option>
+              <option value="LIVE">Live</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="buy-btn" id="create-invoice-btn" style="width: auto; padding: 0.6rem 1.4rem;">
+          Create invoice
+        </button>
+        <div class="error-banner" id="invoice-error"></div>
+
+        <div id="invoice-result" style="display: none; margin-top: 1.2rem;">
+          <div class="success-banner">
+            <strong>Invoice created.</strong>
+            <p id="invoice-result-summary"></p>
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.4rem;">
+              <a href="#" id="invoice-pay-link" target="_blank" rel="noopener">Pay now →</a>
+              <a href="#" id="invoice-web-link" target="_blank" rel="noopener">View invoice →</a>
+              <a href="#" id="invoice-pdf-link" target="_blank" rel="noopener">Download PDF →</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="quotes.js"></script>
+  </body>
+</html>

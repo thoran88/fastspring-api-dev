@@ -691,6 +691,181 @@ app.post("/api/subscriptions/:id/cancel", async (req, res) => {
   }
 });
 
+// Quotes & Invoices - a standalone B2B flow, unrelated to the storefront
+// demos above. A quote is just a proposal (no payment mechanism of its
+// own); turning it into something a customer can actually pay means
+// separately creating an invoice from the quote's own recipient/items,
+// since POST /invoices doesn't take a quoteId - it's a fully independent
+// endpoint that happens to accept the same shape of data.
+app.post("/api/quotes", async (req, res) => {
+  const { name, items, recipient, recipientAddress, notes } = req.body ?? {};
+  if (!name || !items?.length || !recipient || !recipientAddress) {
+    return res.status(400).json({
+      error: "name, items, recipient, and recipientAddress are required",
+    });
+  }
+
+  try {
+    const response = await fetch(`${FASTSPRING_API_BASE}/quotes`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: authHeader,
+      },
+      body: JSON.stringify({ name, items, recipient, recipientAddress, notes }),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      console.error("Quote creation failed", data);
+      return res
+        .status(502)
+        .json({ error: "Failed to create quote", details: data });
+    }
+    res.json(data);
+  } catch (err) {
+    console.error("Quote creation error", err);
+    res.status(500).json({ error: "Failed to create quote" });
+  }
+});
+
+app.get("/api/quotes", async (req, res) => {
+  try {
+    const response = await fetch(`${FASTSPRING_API_BASE}/quotes`, {
+      headers: { Authorization: authHeader },
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      console.error("Quote list failed", data);
+      return res
+        .status(502)
+        .json({ error: "Failed to list quotes", details: data });
+    }
+    res.json(data);
+  } catch (err) {
+    console.error("Quote list error", err);
+    res.status(500).json({ error: "Failed to list quotes" });
+  }
+});
+
+app.get("/api/quotes/:id", async (req, res) => {
+  try {
+    const response = await fetch(
+      `${FASTSPRING_API_BASE}/quotes/${req.params.id}`,
+      { headers: { Authorization: authHeader } },
+    );
+    const data = await response.json();
+    if (!response.ok) {
+      console.error("Quote fetch failed", data);
+      return res
+        .status(502)
+        .json({ error: "Failed to load quote", details: data });
+    }
+    res.json(data);
+  } catch (err) {
+    console.error("Quote fetch error", err);
+    res.status(500).json({ error: "Failed to load quote" });
+  }
+});
+
+// Builds a payable invoice from a quote's own recipient/items rather than
+// requiring the caller to re-type them - the two endpoints just happen to
+// take compatible shapes, there's no server-side quote->invoice link.
+app.post("/api/invoices", async (req, res) => {
+  const {
+    currencyCode,
+    email,
+    firstName,
+    lastName,
+    country,
+    postalCode,
+    invoiceItems,
+    paymentMethod,
+    mode,
+  } = req.body ?? {};
+  if (
+    !currencyCode ||
+    !email ||
+    !firstName ||
+    !lastName ||
+    !country ||
+    !postalCode ||
+    !invoiceItems?.length
+  ) {
+    return res.status(400).json({
+      error:
+        "currencyCode, email, firstName, lastName, country, postalCode, and invoiceItems are required",
+    });
+  }
+
+  const contact = { email, firstName, lastName };
+  const address = { country, postalCode };
+
+  try {
+    const response = await fetch(
+      `${FASTSPRING_API_BASE}/invoices/paymentInvoice`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: authHeader,
+        },
+        body: JSON.stringify({
+          currencyCode,
+          // FastSpring silently 500s with an empty response body if only
+          // one contact type is sent - both billTo and deliverTo are
+          // required even when it's the same person for both, and this
+          // isn't mentioned anywhere in the docs. Confirmed by testing.
+          contacts: [
+            { contactType: "billTo", contact, address },
+            { contactType: "deliverTo", contact, address },
+          ],
+          invoiceItems,
+          paymentMethod: paymentMethod || "CARD",
+          mode: mode || "TEST",
+        }),
+      },
+    );
+
+    // FastSpring returns a genuinely empty body on some failures (no JSON
+    // at all), which throws if you call response.json() directly.
+    const text = await response.text();
+    const data = text ? JSON.parse(text) : null;
+    if (!response.ok) {
+      console.error("Invoice creation failed", response.status, data);
+      return res.status(502).json({
+        error:
+          data?.message ||
+          `Failed to create invoice (FastSpring returned ${response.status} with no details)`,
+        details: data,
+      });
+    }
+    res.json(data);
+  } catch (err) {
+    console.error("Invoice creation error", err);
+    res.status(500).json({ error: "Failed to create invoice" });
+  }
+});
+
+app.get("/api/invoices/:id", async (req, res) => {
+  try {
+    const response = await fetch(
+      `${FASTSPRING_API_BASE}/invoices/${req.params.id}`,
+      { headers: { Authorization: authHeader } },
+    );
+    const data = await response.json();
+    if (!response.ok) {
+      console.error("Invoice fetch failed", data);
+      return res
+        .status(502)
+        .json({ error: "Failed to load invoice", details: data });
+    }
+    res.json(data);
+  } catch (err) {
+    console.error("Invoice fetch error", err);
+    res.status(500).json({ error: "Failed to load invoice" });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Payment Components demo running at http://localhost:${PORT}`);
 });
