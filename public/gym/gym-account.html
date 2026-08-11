@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>FlexFit — My Account</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Set the theme before first paint so there's no flash of the wrong theme. -->
+    <script>
+      (function () {
+        var stored = localStorage.getItem("nova-theme");
+        var theme =
+          stored ||
+          (window.matchMedia("(prefers-color-scheme: light)").matches
+            ? "light"
+            : "dark");
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+
+    <link rel="stylesheet" href="../shared/styles.css" />
+
+    <!-- FastSpring's Embedded Payment Management Library - a separate
+         product from Checkout Components, used only for the "update payment
+         method" popup below. No DOM dependency, so it can load anywhere. -->
+    <script
+      src="https://epml.onfastspring.com/epml/epml.min.js"
+      data-payment-component-id="payment-gym"
+      id="fsc-epml"
+    ></script>
+  </head>
+
+  <body>
+    <script type="module" src="../shared/admin-theme.js"></script>
+    <header>
+      <div class="logo">FLEXFIT<span>My Account</span></div>
+      <div style="display: flex; align-items: center; gap: 0.8rem;">
+        <a href="../index.html" class="admin-link">← All demos</a>
+        <a href="gym.html" class="admin-link">← Customer signup</a>
+        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme"></button>
+      </div>
+    </header>
+
+    <div class="hero">
+      <h1>Manage your membership</h1>
+      <p>
+        Look up your membership by email to update your payment method,
+        book a tennis court, or cancel - all without staff involvement.
+      </p>
+    </div>
+
+    <main class="gym-layout">
+      <section class="gym-card" id="lookup-card">
+        <h2>Find your account</h2>
+        <p class="gym-sub">Enter the email you signed up with.</p>
+
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="lookup-email" placeholder="you@example.com" />
+        </div>
+        <button class="buy-btn" id="lookup-btn" style="width: auto; padding: 0.6rem 1.4rem;">
+          Find my account
+        </button>
+        <div class="error-banner" id="lookup-error"></div>
+      </section>
+
+      <section class="gym-card" id="account-card" style="display: none">
+        <h2>Your membership</h2>
+        <div id="account-summary" style="margin-bottom: 1.2rem;">
+          <div class="member-name" id="account-name"></div>
+          <div class="member-meta" id="account-meta"></div>
+        </div>
+
+        <div style="display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center;">
+          <button
+            class="buy-btn"
+            id="update-payment-btn"
+            style="width: auto; padding: 0.6rem 1.2rem;"
+          >
+            Update payment method
+          </button>
+          <button
+            class="continue-btn"
+            id="cancel-btn"
+            style="width: auto; padding: 0.6rem 1.2rem;"
+          >
+            Cancel membership
+          </button>
+          <a href="#" id="view-history-link" target="_blank" rel="noopener" class="admin-link">
+            View full account &amp; order history →
+          </a>
+        </div>
+        <div class="charge-result" id="account-action-result"></div>
+      </section>
+
+      <section class="gym-card" id="booking-card" style="display: none">
+        <h2>Book a tennis court</h2>
+        <p class="gym-sub">
+          One-hour reservation at the FlexFit courts - $15.00, charged
+          straight to your membership's payment method on file. No card
+          re-entry needed.
+        </p>
+
+        <button
+          class="buy-btn"
+          id="book-court-btn"
+          style="width: auto; padding: 0.6rem 1.4rem;"
+        >
+          Book now - $15.00
+        </button>
+
+        <div class="error-banner" id="booking-error"></div>
+        <div class="success-banner" id="booking-success" style="display: none">
+          <strong>Court booked.</strong>
+          <p>Your card was charged $15.00 for the reservation.</p>
+        </div>
+      </section>
+
+      <section class="gym-card" id="history-card" style="display: none">
+        <h2>Order history</h2>
+        <p class="gym-sub">Every order on this account - membership charges and add-ons.</p>
+        <div id="history-list"></div>
+      </section>
+    </main>
+
+    <script type="module" src="gym-account.js"></script>
+  </body>
+</html>
