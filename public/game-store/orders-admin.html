@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>NOVA — Refunds Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Set the theme before first paint so there's no flash of the wrong theme. -->
+    <script>
+      (function () {
+        var stored = localStorage.getItem("nova-theme");
+        var theme =
+          stored ||
+          (window.matchMedia("(prefers-color-scheme: light)").matches
+            ? "light"
+            : "dark");
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+
+    <link rel="stylesheet" href="../shared/styles.css" />
+    <link rel="stylesheet" href="../products/products.css" />
+  </head>
+
+  <body>
+    <!-- Wraps FastSpring's Returns API (POST /returns). It takes an array
+         natively, so "one refund" and "multiple refunds" are the same call
+         with a different array length - whether that's several separate
+         partial refunds against one order over time, or several different
+         orders refunded together in one request. Checking multiple boxes
+         below and processing once does the latter in a single API call. -->
+    <script type="module" src="../shared/admin-theme.js"></script>
+
+    <header>
+      <div class="logo">NOVA<span>Refunds Admin</span></div>
+      <div style="display: flex; align-items: center; gap: 0.8rem;">
+        <a href="../index.html" class="admin-link">← All demos</a>
+        <a href="index.html" class="admin-link">← Store</a>
+        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme"></button>
+      </div>
+    </header>
+
+    <div class="hero">
+      <h1>Manage refunds</h1>
+      <p>
+        Check off any orders below and refund them together in one batch -
+        full or partial, one order or many.
+      </p>
+    </div>
+
+    <main class="gym-layout">
+      <section class="gym-card" id="orders-card">
+        <div class="admin-toolbar">
+          <h2>Orders</h2>
+          <div style="display: flex; gap: 0.6rem; align-items: center;">
+            <div class="field" style="margin-bottom: 0;">
+              <select id="status-filter">
+                <option value="completed">Completed</option>
+                <option value="canceled">Canceled</option>
+                <option value="failed">Failed</option>
+              </select>
+            </div>
+            <div class="field" style="margin-bottom: 0;">
+              <input type="text" id="product-filter" placeholder="Filter by product path" style="width: 180px;" />
+            </div>
+            <button class="admin-refresh-btn" id="refresh-orders-btn">Refresh</button>
+          </div>
+        </div>
+        <div id="orders-list"></div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+          <span class="gym-sub" id="orders-page-info" style="margin: 0;"></span>
+          <div style="display: flex; gap: 0.6rem;">
+            <button class="admin-refresh-btn" id="prev-page-btn">← Prev</button>
+            <button class="admin-refresh-btn" id="next-page-btn">Next →</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="gym-card" id="queue-card" style="display: none">
+        <div class="admin-toolbar">
+          <h2>Refund queue</h2>
+          <button class="admin-refresh-btn" id="process-btn">Process refund queue</button>
+        </div>
+        <div id="queue-list"></div>
+        <div class="error-banner" id="process-error"></div>
+      </section>
+
+      <section class="gym-card" id="results-card" style="display: none">
+        <h2>Results</h2>
+        <div id="results-list"></div>
+      </section>
+
+      <section class="gym-card" id="history-card">
+        <div class="admin-toolbar">
+          <h2>Refund history</h2>
+          <button class="admin-refresh-btn" id="refresh-history-btn">Refresh</button>
+        </div>
+        <p class="gym-sub">Every return that's been made on this account, newest logic aside - flat list, one row per return.</p>
+        <div id="history-list"></div>
+      </section>
+    </main>
+
+    <script type="module" src="orders-admin.js"></script>
+  </body>
+</html>
