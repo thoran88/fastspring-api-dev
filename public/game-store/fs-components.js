@@ -39,6 +39,7 @@ const THEMES = {
 let cardComponent = null;
 let payButtonComponent = null;
 let disclosuresComponent = null;
+let couponComponent = null;
 
 // The SDK doesn't document a style-update API - the reliable way to re-theme
 // a mounted component is to tear it down and create it again. Method name
@@ -67,6 +68,77 @@ export function mountComponents(theme) {
   teardown(cardComponent, "card-element");
   teardown(payButtonComponent, "pay-button-element");
   teardown(disclosuresComponent, "disclosures-element");
+  teardown(couponComponent, "coupon-element");
+
+  // TNP-29563 - buyer-facing coupon entry. Backend owns all validation. The
+  // iframe posts an internal "applyCoupon" message that the SDK turns into
+  // POST {sessionUrl}/cart/coupon, then reloads the session - which is what
+  // fires onSessionLoaded in fs-sdk.js. No onEvent option exists on this SDK
+  // version (v1.2.0) despite the ticket's spec - the component reads applied/
+  // error state straight from the reloaded session itself, entirely inside
+  // its own iframe. It does not render a discount amount - that's meant to
+  // live in a cart/totals component we don't have here, so applying a code
+  // won't move the price shown above the modal.
+  couponComponent = sdk.components.create("fs-coupon", {
+    presentation: "collapsed",
+    style: {
+      state: {
+        default: {
+          input: {
+            backgroundColor: c.inputBg,
+            borderColor: c.border,
+            borderRadius: "8px",
+            height: "48px",
+            padding: "0 10px",
+            color: c.text,
+            fontSize: "16px",
+            fontFamily: FONT_STACK,
+            placeholderColor: c.placeholder,
+          },
+          button: {
+            backgroundColor: "transparent",
+            color: c.accent,
+            border: "none",
+            fontFamily: FONT_STACK,
+            fontSize: "14px",
+            fontWeight: "700",
+          },
+          chip: {
+            backgroundColor: c.inputBg,
+            color: c.text,
+            borderRadius: "999px",
+            padding: "6px 12px",
+            fontFamily: FONT_STACK,
+            fontSize: "13px",
+          },
+          error: {
+            color: c.danger,
+            fontSize: "12px",
+          },
+          toggle: {
+            color: c.accent,
+            fontFamily: FONT_STACK,
+            fontSize: "14px",
+          },
+        },
+        hover: {
+          input: {
+            borderColor: c.borderHover,
+          },
+          button: {
+            color: c.accentHover,
+          },
+        },
+        focus: {
+          input: {
+            borderColor: c.accent,
+            outlineColor: c.accent,
+          },
+        },
+      },
+    },
+  });
+  couponComponent.mount("#coupon-element");
 
   cardComponent = sdk.components.create("fs-card", {
     labelMode: "fixed",

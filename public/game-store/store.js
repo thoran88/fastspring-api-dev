@@ -165,6 +165,8 @@ const checkoutView = document.getElementById("checkout-view");
 const successView = document.getElementById("success-view");
 const errorBanner = document.getElementById("error-banner");
 const componentsWrap = document.getElementById("components-wrap");
+const checkoutContinueBtn = document.getElementById("checkout-continue-btn");
+const emailInput = document.getElementById("email");
 let currentGame = null;
 
 function openModal(game) {
@@ -172,21 +174,17 @@ function openModal(game) {
   document.getElementById("modal-title").textContent = game.title;
   document.getElementById("modal-price").textContent = game.price;
 
-  const now = new Date();
-  const datePart =
-    now.getFullYear().toString() +
-    String(now.getMonth() + 1).padStart(2, "0") +
-    String(now.getDate()).padStart(2, "0");
-  document.getElementById("email").value = `thoran+${datePart}@fastspring.com`;
-
   errorBanner.style.display = "none";
   successView.classList.remove("open");
   checkoutView.style.display = "block";
-  // A new session is created below every time the modal opens, so the
-  // skeleton needs to come back too - not just on the very first load.
+  // A new session is created once the buyer continues, so the skeleton
+  // needs to come back too - not just on the very first load.
   componentsWrap.classList.add("is-loading");
+  componentsWrap.style.display = "none";
+  checkoutContinueBtn.style.display = "block";
+  checkoutContinueBtn.disabled = false;
+  checkoutContinueBtn.textContent = "Continue to payment";
   backdrop.classList.add("open");
-  startCheckoutSession();
 }
 
 function closeModal() {
@@ -202,12 +200,22 @@ document
   .getElementById("continue-btn")
   .addEventListener("click", closeModal);
 
-// The pay button lives inside fs-components.js's mounted fs-pay-button,
-// so we create the session as soon as the modal opens rather than
-// waiting on a separate in-modal button click.
+// The pay button lives inside fs-components.js's mounted fs-pay-button, so
+// the session has to exist before it's useful - but only once the buyer has
+// actually entered their email, not before (see checkoutContinueBtn below).
 async function startCheckoutSession() {
   if (!currentGame) return;
   errorBanner.style.display = "none";
+
+  const email = emailInput.value.trim();
+  if (!email) {
+    showError("Enter an email address to continue.");
+    return;
+  }
+
+  checkoutContinueBtn.disabled = true;
+  checkoutContinueBtn.textContent = "Loading…";
+  componentsWrap.style.display = "block";
 
   try {
     const res = await fetch("/api/session", {
@@ -216,7 +224,7 @@ async function startCheckoutSession() {
       body: JSON.stringify({
         firstName: document.getElementById("fname").value,
         lastName: document.getElementById("lname").value,
-        email: document.getElementById("email").value,
+        email,
         productPath: currentGame.productPath,
       }),
     });
@@ -230,13 +238,22 @@ async function startCheckoutSession() {
       onSuccess: () => {
         console.log("Session attached — checkout ready");
         componentsWrap.classList.remove("is-loading");
+        checkoutContinueBtn.style.display = "none";
       },
       onError: (err) => showError(err?.message || "Checkout failed to load"),
     });
   } catch (err) {
     showError(err.message);
+    componentsWrap.style.display = "none";
+    checkoutContinueBtn.disabled = false;
+    checkoutContinueBtn.textContent = "Continue to payment";
   }
 }
+
+checkoutContinueBtn.addEventListener("click", startCheckoutSession);
+emailInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") startCheckoutSession();
+});
 
 function showError(message) {
   errorBanner.textContent = message;
@@ -262,9 +279,14 @@ window.addEventListener("fs:payment-failed", (e) => {
 
 // Switching theme tears down and recreates the mounted card/pay-button
 // components (see fs-components.js), which drops any session they were
-// attached to - reattach a fresh one if the checkout modal is open.
+// attached to - reattach a fresh one, but only if the buyer had already
+// continued past the email step (checkoutContinueBtn hidden = session active).
 window.addEventListener("themechange", () => {
-  if (backdrop.classList.contains("open") && currentGame) {
+  if (
+    backdrop.classList.contains("open") &&
+    currentGame &&
+    checkoutContinueBtn.style.display === "none"
+  ) {
     startCheckoutSession();
   }
 });
