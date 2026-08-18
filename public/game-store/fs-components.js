@@ -41,45 +41,21 @@ let payButtonComponent = null;
 let disclosuresComponent = null;
 let couponComponent = null;
 
-// The SDK doesn't document a style-update API - the reliable way to re-theme
-// a mounted component is to tear it down and create it again. Method name
-// isn't confirmed by FastSpring's docs, so try the common candidates and
-// always fall back to clearing the container directly.
-function teardown(component, containerId) {
-  if (component) {
-    for (const method of ["unmount", "destroy", "remove"]) {
-      try {
-        if (typeof component[method] === "function") {
-          component[method]();
-          break;
-        }
-      } catch {
-        // fall through to the DOM clear below
-      }
-    }
-  }
-  const container = document.getElementById(containerId);
-  if (container) container.innerHTML = "";
-}
-
-export function mountComponents(theme) {
-  const c = THEMES[theme] || THEMES.dark;
-
-  teardown(cardComponent, "card-element");
-  teardown(payButtonComponent, "pay-button-element");
-  teardown(disclosuresComponent, "disclosures-element");
-  teardown(couponComponent, "coupon-element");
-
-  // TNP-29563 - buyer-facing coupon entry. Backend owns all validation. The
-  // iframe posts an internal "applyCoupon" message that the SDK turns into
-  // POST {sessionUrl}/cart/coupon, then reloads the session - which is what
-  // fires onSessionLoaded in fs-sdk.js. No onEvent option exists on this SDK
-  // version (v1.2.0) despite the ticket's spec - the component reads applied/
-  // error state straight from the reloaded session itself, entirely inside
-  // its own iframe. It does not render a discount amount - that's meant to
-  // live in a cart/totals component we don't have here, so applying a code
-  // won't move the price shown above the modal.
-  couponComponent = sdk.components.create("fs-coupon", {
+// TNP-29563 - buyer-facing coupon entry. Backend owns all validation. The
+// iframe posts an internal "applyCoupon" message that the SDK turns into
+// POST {sessionUrl}/cart/coupon, then reloads the session - which is what
+// fires onSessionLoaded in fs-sdk.js. No onEvent option exists on this SDK
+// version (v1.2.0) despite the ticket's spec - the component reads applied/
+// error state straight from the reloaded session itself, entirely inside
+// its own iframe. It does not render a discount amount - that's meant to
+// live in a cart/totals component we don't have here, so applying a code
+// won't move the price shown above the modal.
+//
+// Styling here is a placeholder (wrap/btn keys aren't confirmed correct -
+// the panel still shows white in dark mode) pending FastSpring's own
+// style-reference doc for this component, which is expected soon.
+function couponOptions(c) {
+  return {
     presentation: "expanded",
     style: {
       state: {
@@ -137,10 +113,11 @@ export function mountComponents(theme) {
         },
       },
     },
-  });
-  couponComponent.mount("#coupon-element");
+  };
+}
 
-  cardComponent = sdk.components.create("fs-card", {
+function cardOptions(c) {
+  return {
     labelMode: "fixed",
     // We show our own title/price summary above the modal, so the built-in
     // "Payment" header (icon + title) would be redundant.
@@ -215,10 +192,11 @@ export function mountComponents(theme) {
         },
       },
     },
-  });
-  cardComponent.mount("#card-element");
+  };
+}
 
-  payButtonComponent = sdk.components.create("fs-pay-button", {
+function payButtonOptions(c) {
+  return {
     style: {
       state: {
         default: {
@@ -257,10 +235,11 @@ export function mountComponents(theme) {
         },
       },
     },
-  });
-  payButtonComponent.mount("#pay-button-element");
+  };
+}
 
-  disclosuresComponent = sdk.components.create("fs-disclosures", {
+function disclosuresOptions(c) {
+  return {
     style: {
       state: {
         default: {
@@ -280,8 +259,51 @@ export function mountComponents(theme) {
         },
       },
     },
-  });
-  disclosuresComponent.mount("#disclosures-element");
+  };
+}
+
+// Each component instance exposes update(options), which re-sends the whole
+// config over postMessage to the already-mounted iframe - confirmed live
+// against the real SDK (v1.2.0), despite not being documented anywhere.
+// That means re-theming doesn't need a destroy/recreate cycle: mount once,
+// then just update() on every theme change.
+function mountOrUpdate(component, containerId, type, options) {
+  if (component) {
+    component.update(options);
+    return component;
+  }
+  const created = sdk.components.create(type, options);
+  created.mount(`#${containerId}`);
+  return created;
+}
+
+export function mountComponents(theme) {
+  const c = THEMES[theme] || THEMES.dark;
+
+  couponComponent = mountOrUpdate(
+    couponComponent,
+    "coupon-element",
+    "fs-coupon",
+    couponOptions(c),
+  );
+  cardComponent = mountOrUpdate(
+    cardComponent,
+    "card-element",
+    "fs-card",
+    cardOptions(c),
+  );
+  payButtonComponent = mountOrUpdate(
+    payButtonComponent,
+    "pay-button-element",
+    "fs-pay-button",
+    payButtonOptions(c),
+  );
+  disclosuresComponent = mountOrUpdate(
+    disclosuresComponent,
+    "disclosures-element",
+    "fs-disclosures",
+    disclosuresOptions(c),
+  );
 }
 
 mountComponents(
