@@ -80,7 +80,7 @@ export function mountComponents(theme) {
   // live in a cart/totals component we don't have here, so applying a code
   // won't move the price shown above the modal.
   couponComponent = sdk.components.create("fs-coupon", {
-    presentation: "collapsed",
+    presentation: "expanded",
     style: {
       state: {
         default: {
@@ -284,4 +284,6 @@ export function mountComponents(theme) {
   disclosuresComponent.mount("#disclosures-element");
 }
 
-mountComponents(document.documentElement.dataset.theme === "light" ? "light" : "dark");
+mountComponents(
+  document.documentElement.dataset.theme === "light" ? "light" : "dark",
+);
