@@ -51,9 +51,14 @@ let couponComponent = null;
 // live in a cart/totals component we don't have here, so applying a code
 // won't move the price shown above the modal.
 //
-// Styling here is a placeholder (wrap/btn keys aren't confirmed correct -
-// the panel still shows white in dark mode) pending FastSpring's own
-// style-reference doc for this component, which is expected soon.
+// Style keys/shape below are from FastSpring product directly (not our own
+// guess) - notably `background` rather than `backgroundColor`, and `button`
+// rather than the `btn` we'd been guessing from the component's raw CSS
+// variable names. No `wrap` key in their example, and confirmed live via
+// update() that adding one (with the correct `background` property) still
+// does nothing - the outer panel is white regardless of theme and there's
+// currently no way to override it. Flagged to product; not a config mistake
+// on our end.
 function couponOptions(c) {
   return {
     presentation: "expanded",
@@ -61,54 +66,45 @@ function couponOptions(c) {
       state: {
         default: {
           input: {
-            backgroundColor: c.inputBg,
+            background: c.inputBg,
+            color: c.text,
             borderColor: c.border,
             borderRadius: "8px",
-            height: "48px",
-            padding: "0 10px",
-            color: c.text,
-            fontSize: "16px",
-            fontFamily: FONT_STACK,
             placeholderColor: c.placeholder,
           },
           button: {
-            backgroundColor: "transparent",
-            color: c.accent,
-            border: "none",
-            fontFamily: FONT_STACK,
-            fontSize: "14px",
+            background: c.accent,
+            color: "#ffffff",
             fontWeight: "700",
+            borderRadius: "8px",
           },
           chip: {
-            backgroundColor: c.inputBg,
             color: c.text,
-            borderRadius: "999px",
-            padding: "6px 12px",
-            fontFamily: FONT_STACK,
-            fontSize: "13px",
+            iconColor: c.placeholder,
           },
           error: {
             color: c.danger,
-            fontSize: "12px",
           },
           toggle: {
             color: c.accent,
-            fontFamily: FONT_STACK,
-            fontSize: "14px",
-          },
-        },
-        hover: {
-          input: {
-            borderColor: c.borderHover,
-          },
-          button: {
-            color: c.accentHover,
           },
         },
         focus: {
           input: {
             borderColor: c.accent,
-            outlineColor: c.accent,
+          },
+        },
+        hover: {
+          button: {
+            background: c.accentHover,
+          },
+          toggle: {
+            color: c.accentHover,
+          },
+        },
+        disabled: {
+          button: {
+            background: c.disabledBg,
           },
         },
       },

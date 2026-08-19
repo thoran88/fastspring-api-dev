@@ -266,9 +266,16 @@ window.addEventListener("fs:order-completed", (e) => {
   successView.classList.add("open");
   document.getElementById("success-sub").textContent =
     `A confirmation email is on its way to ${document.getElementById("email").value}.`;
+  // The SDK's onOrderCompleted payload nests these under `order.order`, not
+  // flat on the payload itself (order.reference/.id are always undefined) -
+  // found by reading fastspring-sdk.js's own debug-mode logging, which
+  // builds {orderId: e.order.orderId, reference: e.order.orderReference}
+  // from the same normalized object passed to onOrderCompleted.
+  const reference =
+    order.order?.orderReference || order.order?.orderId || order.reference || order.id || "—";
   document.getElementById("receipt").innerHTML = `
                 <div><span>Game</span><span>${currentGame ? currentGame.title : ""}</span></div>
-                <div><span>Order reference</span><span>${order.reference || order.id || "—"}</span></div>
+                <div><span>Order reference</span><span>${reference}</span></div>
                 <div><span>Total</span><span>${order.total || (currentGame ? currentGame.price : "—")}</span></div>
             `;
 });
