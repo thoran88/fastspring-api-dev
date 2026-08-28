@@ -40,6 +40,8 @@ let cardComponent = null;
 let payButtonComponent = null;
 let disclosuresComponent = null;
 let couponComponent = null;
+let googlePayComponent = null;
+let applePayComponent = null;
 
 // TNP-29563 - buyer-facing coupon entry. Backend owns all validation. The
 // iframe posts an internal "applyCoupon" message that the SDK turns into
@@ -234,6 +236,26 @@ function payButtonOptions(c) {
   };
 }
 
+// Only `variant` (brand-locked dark/light, no custom colors - matches
+// Google's own web button restrictions) and geometry under `style.button`
+// are documented on this component; sized to match payButtonOptions above
+// so the two buttons line up.
+function googlePayOptions(theme) {
+  return {
+    variant: theme === "light" ? "light" : "dark",
+    style: {
+      state: {
+        default: {
+          button: {
+            height: "48px",
+            borderRadius: "8px",
+          },
+        },
+      },
+    },
+  };
+}
+
 function disclosuresOptions(c) {
   return {
     style: {
@@ -268,9 +290,17 @@ function mountOrUpdate(component, containerId, type, options) {
     component.update(options);
     return component;
   }
-  const created = sdk.components.create(type, options);
-  created.mount(`#${containerId}`);
-  return created;
+  // fs-apple-pay throws on create() when the device/browser doesn't support
+  // Apple Pay (confirmed in cc-tester's fs-components.js) - guard here so
+  // one wallet button failing can't take the rest of mountComponents() down.
+  try {
+    const created = sdk.components.create(type, options);
+    created.mount(`#${containerId}`);
+    return created;
+  } catch (err) {
+    console.warn(`${type} failed to create/mount`, err);
+    return null;
+  }
 }
 
 export function mountComponents(theme) {
@@ -281,6 +311,18 @@ export function mountComponents(theme) {
     "coupon-element",
     "fs-coupon",
     couponOptions(c),
+  );
+  googlePayComponent = mountOrUpdate(
+    googlePayComponent,
+    "google-pay-element",
+    "fs-google-pay",
+    googlePayOptions(theme),
+  );
+  applePayComponent = mountOrUpdate(
+    applePayComponent,
+    "apple-pay-element",
+    "fs-apple-pay",
+    {},
   );
   cardComponent = mountOrUpdate(
     cardComponent,

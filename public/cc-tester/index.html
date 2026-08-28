@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Checkout Components Tester</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <script src="https://cdn.onfastspring.com/checkout-sdk/latest/fastspring-sdk.js"></script>
+    <link rel="stylesheet" href="../shared/styles.css" />
+    <style>
+      main {
+        max-width: 640px;
+        margin: 0 auto;
+        padding: 2rem 1.2rem 4rem;
+      }
+      .component-block {
+        margin-bottom: 1.5rem;
+      }
+      .component-block h3 {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-dim);
+        margin-bottom: 0.5rem;
+      }
+      #components-wrap {
+        display: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    <script type="module" src="fs-sdk.js"></script>
+    <script type="module" src="fs-components.js"></script>
+
+    <header>
+      <div class="logo">CC<span>Checkout Components Tester</span></div>
+      <a href="../index.html" class="admin-link">← All demos</a>
+    </header>
+
+    <div class="hero">
+      <h1>Checkout Components, one at a time</h1>
+      <p>
+        Every mounted component on one page, against a session created with
+        no email at all - so <code>fs-email</code> is unlocked and can
+        actually collect it, instead of just echoing a value we already set.
+      </p>
+    </div>
+
+    <main>
+      <section class="gym-card" id="setup-view">
+        <p class="gym-sub">
+          No email field here on purpose - that's the whole point of this
+          page.
+        </p>
+        <div class="field-row">
+          <div class="field">
+            <label>First name</label>
+            <input type="text" id="fname" value="Test" />
+          </div>
+          <div class="field">
+            <label>Last name</label>
+            <input type="text" id="lname" value="Buyer" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Product path</label>
+          <input type="text" id="product-path" value="elden-ring" />
+        </div>
+
+        <button class="buy-btn" id="create-session-btn" style="width: auto; padding: 0.6rem 1.4rem;">
+          Create session
+        </button>
+
+        <div class="error-banner" id="error-banner"></div>
+      </section>
+
+      <section class="gym-card" id="components-wrap">
+        <div class="component-block">
+          <div id="email-element"></div>
+        </div>
+
+        <div class="component-block">
+          <div id="card-element"></div>
+        </div>
+
+        <div class="component-block">
+          <div id="coupon-element"></div>
+        </div>
+
+        <div class="component-block">
+          <div id="apple-pay-element"></div>
+        </div>
+
+        <div class="component-block">
+          <div id="pay-button-element"></div>
+        </div>
+
+        <div class="component-block">
+          <div id="disclosures-element"></div>
+        </div>
+      </section>
+
+      <section class="gym-card" id="success-view" style="display: none">
+        <h2>Order completed</h2>
+        <pre id="success-detail" style="white-space: pre-wrap; font-size: 0.8rem;"></pre>
+      </section>
+    </main>
+
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

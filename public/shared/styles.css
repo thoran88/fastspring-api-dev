@@ -460,7 +460,9 @@ header {
 
 .components-wrap.is-loading #card-element,
 .components-wrap.is-loading #pay-button-element,
-.components-wrap.is-loading #disclosures-element {
+.components-wrap.is-loading #disclosures-element,
+.components-wrap.is-loading #google-pay-element,
+.components-wrap.is-loading #apple-pay-element {
   visibility: hidden;
   position: absolute;
 }

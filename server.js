@@ -116,9 +116,10 @@ app.post("/api/session", async (req, res) => {
     checkoutPath = DEFAULT_CHECKOUT_PATH,
     accountId,
   } = req.body ?? {};
-  if (!email) {
-    return res.status(400).json({ error: "email is required" });
-  }
+  // email is intentionally optional - the cc-tester page creates sessions
+  // with no email at all so fs-email can be the thing that actually
+  // collects it (that only works when the session doesn't already have one
+  // locked in - see public/cc-tester).
   if (!productPath) {
     return res.status(400).json({ error: "productPath is required" });
   }
@@ -142,7 +143,7 @@ app.post("/api/session", async (req, res) => {
             // creating a second account for the same person.
             ...(accountId && { accountId }),
             billToContact: {
-              email,
+              ...(email && { email }),
               firstName,
               lastName,
             },
