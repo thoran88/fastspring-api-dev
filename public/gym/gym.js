@@ -82,6 +82,11 @@ window.addEventListener("fs:order-completed", (e) => {
   authorizeSuccess.style.display = "block";
   authorizeSuccessDetail.innerHTML =
     'You\'re all set. Staff can find and charge this membership from the <a href="gym-admin.html">admin panel</a>.';
+
+  window.webhookLog?.expect(
+    (event) => event.type === "subscription.activated",
+    "billing authorization",
+  );
 });
 
 window.addEventListener("fs:payment-failed", (e) => {

@@ -132,6 +132,14 @@ async function chargeMember(id, amount, button, resultEl) {
   const originalText = button.textContent;
   button.textContent = "Charging…";
 
+  window.webhookLog?.expect(
+    (event) =>
+      (event.type === "subscription.charge.completed" ||
+        event.type === "subscription.charge.failed") &&
+      (event.data?.id === id || event.data?.subscription === id),
+    `charge on ${id}`,
+  );
+
   try {
     const res = await fetch(
       `/api/subscriptions/${encodeURIComponent(id)}/charge`,
@@ -166,6 +174,13 @@ async function cancelMember(id, button, resultEl) {
   button.disabled = true;
   const originalText = button.textContent;
   button.textContent = "Canceling…";
+
+  window.webhookLog?.expect(
+    (event) =>
+      event.type === "subscription.canceled" &&
+      (event.data?.id === id || event.data?.subscription === id),
+    `cancellation of ${id}`,
+  );
 
   try {
     const res = await fetch(

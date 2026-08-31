@@ -32,11 +32,13 @@
 
   <body>
     <script type="module" src="../shared/admin-theme.js"></script>
+    <script type="module" src="../shared/webhook-log.js"></script>
     <header>
       <div class="logo">FLEXFIT<span>My Account</span></div>
       <div style="display: flex; align-items: center; gap: 0.8rem;">
         <a href="../index.html" class="admin-link">← All demos</a>
         <a href="gym.html" class="admin-link">← Customer signup</a>
+        <div id="webhook-log-root"></div>
         <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme"></button>
       </div>
     </header>

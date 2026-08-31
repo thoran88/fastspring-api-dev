@@ -175,6 +175,13 @@ async function cancelMembership() {
   const originalText = cancelBtn.textContent;
   cancelBtn.textContent = "Canceling…";
 
+  window.webhookLog?.expect(
+    (event) =>
+      event.type === "subscription.canceled" &&
+      (event.data?.id === member.id || event.data?.subscription === member.id),
+    "cancellation",
+  );
+
   try {
     const res = await fetch(
       `/api/subscriptions/${encodeURIComponent(member.id)}/cancel`,
@@ -204,6 +211,14 @@ async function bookCourt() {
   bookingError.style.display = "none";
   bookCourtBtn.disabled = true;
   bookCourtBtn.textContent = "Booking…";
+
+  window.webhookLog?.expect(
+    (event) =>
+      (event.type === "subscription.charge.completed" ||
+        event.type === "subscription.charge.failed") &&
+      (event.data?.id === member.id || event.data?.subscription === member.id),
+    "court booking charge",
+  );
 
   try {
     const res = await fetch(

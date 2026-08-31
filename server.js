@@ -44,6 +44,18 @@ const CATALOG_SKU = "GAME";
 
 const app = express();
 
+// Connected /api/webhooks/stream clients (SSE) - lets demo pages show
+// webhook events live instead of only ever seeing them in this process's
+// console output.
+const webhookClients = new Set();
+
+function broadcastWebhookEvent(event) {
+  const frame = `data: ${JSON.stringify(event)}\n\n`;
+  for (const client of webhookClients) {
+    client.write(frame);
+  }
+}
+
 function chunk(items, size) {
   const chunks = [];
   for (let i = 0; i < items.length; i += size) {
@@ -96,6 +108,8 @@ app.post("/webhooks", express.raw({ type: "application/json" }), (req, res) => {
         `  -> subscription.activated: id=${event.data?.id} account=${event.data?.account}`,
       );
     }
+
+    broadcastWebhookEvent(event);
   }
 
   res.sendStatus(200);
@@ -103,6 +117,26 @@ app.post("/webhooks", express.raw({ type: "application/json" }), (req, res) => {
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
+
+// Live feed of webhook events for the demo pages' activity dropdown - just
+// broadcasts whatever /webhooks already received, no separate FastSpring
+// call. Heartbeat comment keeps the connection open through idle periods.
+app.get("/api/webhooks/stream", (req, res) => {
+  res.set({
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache",
+    Connection: "keep-alive",
+  });
+  res.flushHeaders();
+  res.write("retry: 2000\n\n");
+  webhookClients.add(res);
+
+  const heartbeat = setInterval(() => res.write(":\n\n"), 20000);
+  req.on("close", () => {
+    clearInterval(heartbeat);
+    webhookClients.delete(res);
+  });
+});
 
 // Session creation has to happen server-side - it's the one step that
 // needs the store's API credentials, which must never reach the browser.
