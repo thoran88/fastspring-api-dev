@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>IBM-sub — Account Summary</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Set the theme before first paint so there's no flash of the wrong theme. -->
+    <script>
+      (function () {
+        var stored = localStorage.getItem("nova-theme");
+        var theme =
+          stored ||
+          (window.matchMedia("(prefers-color-scheme: light)").matches
+            ? "light"
+            : "dark");
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+
+    <link rel="stylesheet" href="../shared/styles.css" />
+
+    <!-- FastSpring's Embedded Payment Management Library - a separate
+         product from the checkout itself, used only for the "update payment
+         method" popup below. No DOM dependency, so it can load anywhere. -->
+    <script
+      src="https://epml.onfastspring.com/epml/epml.min.js"
+      data-payment-component-id="payment-ibm"
+      id="fsc-epml"
+    ></script>
+  </head>
+
+  <body>
+    <script type="module" src="../shared/admin-theme.js"></script>
+
+    <div class="billing-shell">
+      <div class="billing-topbar">
+        <div class="billing-topbar-brand">
+          <span class="billing-brand-mark">I</span>
+          <span class="billing-org-pill">ibm-demo-org ⌄</span>
+        </div>
+        <div class="billing-topbar-icons">
+          <a href="../index.html" class="admin-link">← All demos</a>
+          <a href="ibm.html" class="admin-link">← Add payment method</a>
+          <button
+            id="theme-toggle"
+            class="theme-toggle"
+            aria-label="Toggle theme"
+          ></button>
+        </div>
+      </div>
+
+      <div class="billing-body">
+        <aside class="billing-sidebar">
+          <a href="../index.html" class="billing-sidebar-back">‹ Back to Dashboard</a>
+          <div class="billing-sidebar-label">Billing</div>
+          <ul class="billing-nav">
+            <li><a href="ibm-account.html" class="active">Account summary</a></li>
+            <li><a href="#history-card">Statements</a></li>
+            <li><a href="ibm.html">Payment methods</a></li>
+            <li><a href="ibm-account.html">Pricing</a></li>
+          </ul>
+        </aside>
+
+        <main class="billing-main">
+          <div class="billing-breadcrumb">ibm-demo-org / Billing / Account summary</div>
+          <div class="billing-page-title">
+            <span class="billing-icon">🧾</span>
+            <h1>Account summary</h1>
+          </div>
+
+          <div class="billing-plan-card" id="lookup-card">
+            <div class="billing-plan-title">Find your account</div>
+            <p class="gym-sub">Enter the email you signed up with.</p>
+
+            <div class="field">
+              <label>Email</label>
+              <input type="email" id="lookup-email" placeholder="you@example.com" />
+            </div>
+            <button class="buy-btn" id="lookup-btn" style="width: auto; padding: 0.6rem 1.4rem;">
+              Find my account
+            </button>
+            <div class="error-banner" id="lookup-error"></div>
+          </div>
+
+          <div class="billing-plan-card" id="account-card" style="display: none">
+            <div class="billing-plan-title">Your subscription</div>
+            <div id="account-summary" style="margin-bottom: 1.2rem;">
+              <div class="member-name" id="account-name"></div>
+              <div class="member-meta" id="account-meta"></div>
+            </div>
+
+            <div style="display: flex; gap: 0.6rem; flex-wrap: wrap; align-items: center;">
+              <button
+                class="buy-btn"
+                id="update-payment-btn"
+                style="width: auto; padding: 0.6rem 1.2rem;"
+              >
+                Update payment method
+              </button>
+              <button
+                class="continue-btn"
+                id="cancel-btn"
+                style="width: auto; padding: 0.6rem 1.2rem;"
+              >
+                Cancel subscription
+              </button>
+              <a href="#" id="view-history-link" target="_blank" rel="noopener" class="admin-link">
+                View full account &amp; order history →
+              </a>
+            </div>
+            <div class="charge-result" id="account-action-result"></div>
+          </div>
+
+          <div class="billing-plan-card" id="history-card" style="display: none">
+            <div class="billing-plan-title">Statements</div>
+            <p class="gym-sub">Every charge on this account - the monthly usage rebill and anything else.</p>
+            <div id="history-list"></div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script type="module" src="ibm-account.js"></script>
+  </body>
+</html>

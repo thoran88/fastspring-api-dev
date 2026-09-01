@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>IBM-sub — Add Payment Method</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Set the theme before first paint so there's no flash of the wrong theme. -->
+    <script>
+      (function () {
+        var stored = localStorage.getItem("nova-theme");
+        var theme =
+          stored ||
+          (window.matchMedia("(prefers-color-scheme: light)").matches
+            ? "light"
+            : "dark");
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+
+    <link rel="stylesheet" href="../shared/styles.css" />
+  </head>
+
+  <body>
+    <script type="module" src="../shared/admin-theme.js"></script>
+
+    <div class="billing-shell">
+      <div class="billing-topbar">
+        <div class="billing-topbar-brand">
+          <span class="billing-brand-mark">I</span>
+          <span class="billing-org-pill">ibm-demo-org ⌄</span>
+        </div>
+        <div class="billing-topbar-icons">
+          <a href="../index.html" class="admin-link">← All demos</a>
+          <a href="ibm-account.html" class="admin-link">My account →</a>
+          <a href="ibm-admin.html" class="admin-link">Staff admin →</a>
+          <button
+            id="theme-toggle"
+            class="theme-toggle"
+            aria-label="Toggle theme"
+          ></button>
+        </div>
+      </div>
+
+      <div class="billing-body">
+        <aside class="billing-sidebar">
+          <a href="../index.html" class="billing-sidebar-back">‹ Back to Dashboard</a>
+          <div class="billing-sidebar-label">Billing</div>
+          <ul class="billing-nav">
+            <li><a href="ibm-account.html">Account summary</a></li>
+            <li><a href="ibm-account.html">Statements</a></li>
+            <li><a href="ibm.html" class="active">Payment methods</a></li>
+            <li><a href="ibm-account.html">Pricing</a></li>
+          </ul>
+        </aside>
+
+        <main class="billing-main">
+          <div class="billing-breadcrumb">
+            ibm-demo-org / Billing: Payment methods / Add payment method
+          </div>
+          <div class="billing-page-title">
+            <span class="billing-icon">💳</span>
+            <h1>Add payment method</h1>
+          </div>
+
+          <div class="billing-plan-card">
+            <div class="billing-plan-title">You are using IBM-sub on trial</div>
+            <ul>
+              <li>Nothing is charged today - adding a card just authorizes future billing.</li>
+              <li>Once added, you'll move to usage-based billing.</li>
+              <li>Your card is charged on the 1st of every month for the prior month's usage.</li>
+            </ul>
+          </div>
+
+          <!-- FastSpring's Embedded Checkout (SBL) renders the real "$0,
+               save payment method" form directly into this container - no
+               backend session call needed, unlike the FlexFit/Payment
+               Components integration. -->
+          <div id="fsc-embedded-checkout-container"></div>
+        </main>
+      </div>
+    </div>
+
+    <script
+      id="fsc-api"
+      src="https://d1f8f9xcsvx3ha.cloudfront.net/sbl/TNP-27957/fastspring-builder.js"
+      type="text/javascript"
+      data-storefront="thoran.test.qa.onfastspring.com/embedded-IBM"
+      data-data-callback="dataCallback">
+    </script>
+
+    <script type="module" src="ibm.js"></script>
+  </body>
+</html>

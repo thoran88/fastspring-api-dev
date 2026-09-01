@@ -1027,3 +1027,218 @@ header {
     width: min(340px, calc(100vw - 2.4rem));
   }
 }
+
+/* ---------- Billing settings shell (IBM-sub customer pages) ----------
+   Modeled on a typical SaaS billing/payment-methods settings screen: a
+   permanently-dark top bar (brand bars like this usually don't follow the
+   page's own light/dark toggle) over a light/dark-aware sidebar + content
+   layout using the same tokens as the rest of the site. */
+.billing-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.billing-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  padding: 0 1.2rem;
+  background: #111318;
+  border-bottom: 1px solid #22252c;
+  flex-shrink: 0;
+}
+
+.billing-topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.billing-brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.8rem;
+}
+
+.billing-org-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #1c1f27;
+  border: 1px solid #2a2d3a;
+  border-radius: 8px;
+  padding: 0.35rem 0.7rem;
+  color: #d4d6e0;
+  font-size: 0.82rem;
+}
+
+.billing-topbar-icons {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.billing-topbar-icons .admin-link {
+  color: #d4d6e0;
+}
+
+.billing-topbar-icons .admin-link:hover {
+  color: #fff;
+}
+
+.billing-body {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.billing-sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  background: var(--bg-elevated);
+  padding: 1rem 0.8rem;
+}
+
+.billing-sidebar-back {
+  display: inline-block;
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  text-decoration: none;
+  padding: 0.4rem 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.billing-sidebar-back:hover {
+  color: var(--text);
+}
+
+.billing-sidebar-label {
+  padding: 0 0.5rem;
+  margin-bottom: 0.4rem;
+  color: var(--text-dim);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.billing-nav {
+  list-style: none;
+  margin: 0 0 1.2rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.billing-nav a {
+  display: block;
+  padding: 0.5rem 0.6rem;
+  border-radius: 8px;
+  color: var(--text-dim);
+  font-size: 0.88rem;
+  text-decoration: none;
+}
+
+.billing-nav a:hover {
+  color: var(--text);
+  background: var(--bg-card);
+}
+
+.billing-nav a.active {
+  color: var(--text);
+  background: var(--bg-card);
+  font-weight: 600;
+}
+
+.billing-main {
+  flex: 1;
+  padding: 1.6rem 2rem 3rem;
+  max-width: 720px;
+}
+
+.billing-breadcrumb {
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  margin-bottom: 1rem;
+}
+
+.billing-page-title {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin: 0 0 1.6rem;
+}
+
+.billing-page-title .billing-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.billing-page-title h1 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.billing-plan-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1.2rem 1.4rem;
+  margin-bottom: 1.6rem;
+}
+
+.billing-plan-card .billing-plan-title {
+  font-weight: 700;
+  margin-bottom: 0.7rem;
+}
+
+.billing-plan-card ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  color: var(--text-dim);
+}
+
+.billing-plan-card li {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.billing-plan-card li::before {
+  content: "✓";
+  color: var(--success);
+  font-weight: 700;
+}
+
+@media (max-width: 720px) {
+  .billing-sidebar {
+    display: none;
+  }
+
+  .billing-main {
+    padding: 1.2rem 1.2rem 3rem;
+  }
+}
