@@ -168,6 +168,13 @@ const componentsWrap = document.getElementById("components-wrap");
 const checkoutContinueBtn = document.getElementById("checkout-continue-btn");
 const emailInput = document.getElementById("email");
 let currentGame = null;
+// checkoutContinueBtn.disabled only blocks a second click - it doesn't stop
+// a second Enter press in emailInput from re-entering this function while
+// the first /api/session request is still in flight. That creates a second
+// session and calls sdk.checkout() twice; since sessions are single-use,
+// the first one gets superseded and its onSessionLoaded eventually resolves
+// with status "EXPIRED" instead of firing onError.
+let sessionRequestInFlight = false;
 
 function openModal(game) {
   currentGame = game;
@@ -204,7 +211,7 @@ document
 // the session has to exist before it's useful - but only once the buyer has
 // actually entered their email, not before (see checkoutContinueBtn below).
 async function startCheckoutSession() {
-  if (!currentGame) return;
+  if (!currentGame || sessionRequestInFlight) return;
   errorBanner.style.display = "none";
 
   const email = emailInput.value.trim();
@@ -213,6 +220,7 @@ async function startCheckoutSession() {
     return;
   }
 
+  sessionRequestInFlight = true;
   checkoutContinueBtn.disabled = true;
   checkoutContinueBtn.textContent = "Loading…";
   componentsWrap.style.display = "block";
@@ -237,12 +245,17 @@ async function startCheckoutSession() {
     sdk.checkout(data.id, {
       onSuccess: () => {
         console.log("Session attached — checkout ready");
+        sessionRequestInFlight = false;
         componentsWrap.classList.remove("is-loading");
         checkoutContinueBtn.style.display = "none";
       },
-      onError: (err) => showError(err?.message || "Checkout failed to load"),
+      onError: (err) => {
+        sessionRequestInFlight = false;
+        showError(err?.message || "Checkout failed to load");
+      },
     });
   } catch (err) {
+    sessionRequestInFlight = false;
     showError(err.message);
     componentsWrap.style.display = "none";
     checkoutContinueBtn.disabled = false;
