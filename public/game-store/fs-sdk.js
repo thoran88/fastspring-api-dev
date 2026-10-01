@@ -1,5 +1,5 @@
 export const sdk = FastSpring.init({
-  checkoutUrl: "https://thoran.test.onfastspring.com/components-gaming",
+  checkoutUrl: "https://thoran.test.qa2.onfastspring.com/components-gaming",
   env: "qa2",
 
   onSessionLoaded: (data) => {
