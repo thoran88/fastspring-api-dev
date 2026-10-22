@@ -1,5 +1,4 @@
 import express from "express";
-import { FASTSPRING_API_BASE, authHeader } from "../lib/fastspring.js";
 
 const router = express.Router();
 
@@ -18,11 +17,11 @@ router.post("/api/quotes", async (req, res) => {
   }
 
   try {
-    const response = await fetch(`${FASTSPRING_API_BASE}/quotes`, {
+    const response = await fetch(`${req.fs.apiBase}/quotes`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: authHeader,
+        Authorization: req.fs.auth,
       },
       body: JSON.stringify({ name, items, recipient, recipientAddress, notes }),
     });
@@ -42,8 +41,8 @@ router.post("/api/quotes", async (req, res) => {
 
 router.get("/api/quotes", async (req, res) => {
   try {
-    const response = await fetch(`${FASTSPRING_API_BASE}/quotes`, {
-      headers: { Authorization: authHeader },
+    const response = await fetch(`${req.fs.apiBase}/quotes`, {
+      headers: { Authorization: req.fs.auth },
     });
     const data = await response.json();
     if (!response.ok) {
@@ -62,8 +61,8 @@ router.get("/api/quotes", async (req, res) => {
 router.get("/api/quotes/:id", async (req, res) => {
   try {
     const response = await fetch(
-      `${FASTSPRING_API_BASE}/quotes/${req.params.id}`,
-      { headers: { Authorization: authHeader } },
+      `${req.fs.apiBase}/quotes/${req.params.id}`,
+      { headers: { Authorization: req.fs.auth } },
     );
     const data = await response.json();
     if (!response.ok) {

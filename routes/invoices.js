@@ -1,5 +1,4 @@
 import express from "express";
-import { FASTSPRING_API_BASE, authHeader } from "../lib/fastspring.js";
 
 const router = express.Router();
 
@@ -33,17 +32,25 @@ router.post("/api/invoices", async (req, res) => {
     });
   }
 
+  // tariqh is a production store. A LIVE invoice there is a real bill to a
+  // real buyer, so this demo only creates TEST invoices on prod.
+  if (/^https:\/\/api\.fastspring\.com/.test(req.fs.apiBase) && mode === "LIVE") {
+    return res.status(400).json({
+      error: `LIVE invoices are blocked on the ${req.fs.name} production store. Use Test.`,
+    });
+  }
+
   const contact = { email, firstName, lastName };
   const address = { country, postalCode };
 
   try {
     const response = await fetch(
-      `${FASTSPRING_API_BASE}/invoices/paymentInvoice`,
+      `${req.fs.apiBase}/invoices/paymentInvoice`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: authHeader,
+          Authorization: req.fs.auth,
         },
         body: JSON.stringify({
           currencyCode,
@@ -85,8 +92,8 @@ router.post("/api/invoices", async (req, res) => {
 router.get("/api/invoices/:id", async (req, res) => {
   try {
     const response = await fetch(
-      `${FASTSPRING_API_BASE}/invoices/${req.params.id}`,
-      { headers: { Authorization: authHeader } },
+      `${req.fs.apiBase}/invoices/${req.params.id}`,
+      { headers: { Authorization: req.fs.auth } },
     );
     const data = await response.json();
     if (!response.ok) {

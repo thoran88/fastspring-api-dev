@@ -1,3 +1,7 @@
+// Quotes & Invoices run against the tariqh prod store (test mode invoices).
+// storeMiddleware in server.js picks tariqh creds from this header.
+const QUOTES_STORE = "tariqh";
+
 const qName = document.getElementById("q-name");
 const qFirst = document.getElementById("q-first");
 const qLast = document.getElementById("q-last");
@@ -61,7 +65,7 @@ async function createQuote() {
   try {
     const res = await fetch("/api/quotes", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "X-FS-Store": QUOTES_STORE },
       body: JSON.stringify({
         name,
         items: [{ product, quantity }],
@@ -106,7 +110,7 @@ async function createInvoice() {
   try {
     const res = await fetch("/api/invoices", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "X-FS-Store": QUOTES_STORE },
       body: JSON.stringify({
         currencyCode: iCurrency.value,
         email,
