@@ -1,3 +1,4 @@
+import { ibmFetch } from "./ibm-store.js";
 const listEl = document.getElementById("members-list");
 const refreshBtn = document.getElementById("refresh-btn");
 const bulkBtn = document.getElementById("bulk-rebill-btn");
@@ -30,7 +31,7 @@ function statusClass(state) {
 async function loadMembers() {
   renderLoading();
   try {
-    const res = await fetch("/api/members?product=ibm-sub");
+    const res = await ibmFetch("/api/members?product=hcp-pay-as-you-go");
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Failed to load subscribers");
     renderMembers(data.members || []);
@@ -147,7 +148,7 @@ async function chargeMember(id, amount, button, resultEl) {
   );
 
   try {
-    const res = await fetch(
+    const res = await ibmFetch(
       `/api/subscriptions/${encodeURIComponent(id)}/charge`,
       {
         method: "POST",
@@ -158,7 +159,7 @@ async function chargeMember(id, amount, button, resultEl) {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Charge failed");
 
-    resultEl.textContent = `Charged $${Number(amount).toFixed(2)}.`;
+    resultEl.textContent = `Charged ${Number(amount).toFixed(2)} ${data.currency || ""}.`;
     resultEl.classList.add("success");
     button.textContent = "Charged ✓";
     setTimeout(loadMembers, 1400);
@@ -187,7 +188,7 @@ async function cancelMember(id, button, resultEl) {
   );
 
   try {
-    const res = await fetch(
+    const res = await ibmFetch(
       `/api/subscriptions/${encodeURIComponent(id)}/cancel`,
       { method: "POST" },
     );
@@ -221,10 +222,10 @@ async function runBulkRebill() {
   bulkResultEl.innerHTML = "";
 
   try {
-    const res = await fetch("/api/subscriptions/bulk-charge", {
+    const res = await ibmFetch("/api/subscriptions/bulk-charge", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ product: "ibm-sub" }),
+      body: JSON.stringify({ product: "hcp-pay-as-you-go" }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Bulk charge failed");
@@ -237,7 +238,7 @@ async function runBulkRebill() {
     data.results.forEach((r) => {
       const row = document.createElement("div");
       row.className = "member-meta";
-      row.textContent = `${r.subscription} — $${Number(r.amount).toFixed(2)} — ${r.result}${
+      row.textContent = `${r.subscription} — ${Number(r.amount).toFixed(2)} ${r.currency || ""} — ${r.result}${
         r.error ? ` (${r.error})` : ""
       }`;
       bulkResultEl.appendChild(row);

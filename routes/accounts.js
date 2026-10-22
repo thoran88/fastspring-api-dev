@@ -1,5 +1,5 @@
 import express from "express";
-import { FASTSPRING_API_BASE, authHeader, chunk } from "../lib/fastspring.js";
+import { chunk } from "../lib/fastspring.js";
 
 const router = express.Router();
 
@@ -8,10 +8,10 @@ const router = express.Router();
 // account ID, so this is a list call followed by a bulk account lookup).
 // Shared by the admin member list and the self-service "find my account"
 // lookup below, so the account-join logic lives in one place.
-async function getMembersForProduct(product) {
+async function getMembersForProduct(fs, product) {
   const subsResponse = await fetch(
-    `${FASTSPRING_API_BASE}/subscriptions?products=${product}&scope=test`,
-    { headers: { Authorization: authHeader } },
+    `${fs.apiBase}/subscriptions?products=${product}&scope=test`,
+    { headers: { Authorization: fs.auth } },
   );
   const subsData = await subsResponse.json();
   if (!subsResponse.ok) {
@@ -31,8 +31,8 @@ async function getMembersForProduct(product) {
   const accountIds = [...new Set(subs.map((s) => s.account))];
   const accountResults = await Promise.all(
     accountIds.map((id) =>
-      fetch(`${FASTSPRING_API_BASE}/accounts/${id}`, {
-        headers: { Authorization: authHeader },
+      fetch(`${fs.apiBase}/accounts/${id}`, {
+        headers: { Authorization: fs.auth },
       }).then((r) => r.json()),
     ),
   );
@@ -64,7 +64,7 @@ router.get("/api/members", async (req, res) => {
   }
 
   try {
-    const members = await getMembersForProduct(product);
+    const members = await getMembersForProduct(req.fs, product);
     res.json({ members });
   } catch (err) {
     console.error("Members fetch error", err, err.details);
@@ -84,7 +84,7 @@ router.get("/api/my-account", async (req, res) => {
   }
 
   try {
-    const members = await getMembersForProduct(product);
+    const members = await getMembersForProduct(req.fs, product);
     const matches = members.filter(
       (m) => m.email && m.email.toLowerCase() === email.toLowerCase(),
     );
@@ -114,8 +114,8 @@ router.get("/api/my-account", async (req, res) => {
 router.get("/api/accounts/:id/authenticate", async (req, res) => {
   try {
     const response = await fetch(
-      `${FASTSPRING_API_BASE}/accounts/${req.params.id}/authenticate`,
-      { headers: { Authorization: authHeader } },
+      `${req.fs.apiBase}/accounts/${req.params.id}/authenticate`,
+      { headers: { Authorization: req.fs.auth } },
     );
     const data = await response.json();
     const result = data.accounts?.[0];
@@ -141,8 +141,8 @@ router.get("/api/accounts/:id/authenticate", async (req, res) => {
 router.get("/api/accounts/:id/history", async (req, res) => {
   try {
     const accountResponse = await fetch(
-      `${FASTSPRING_API_BASE}/accounts/${req.params.id}`,
-      { headers: { Authorization: authHeader } },
+      `${req.fs.apiBase}/accounts/${req.params.id}`,
+      { headers: { Authorization: req.fs.auth } },
     );
     const accountData = await accountResponse.json();
     if (!accountResponse.ok || accountData.result !== "success") {
@@ -160,8 +160,8 @@ router.get("/api/accounts/:id/history", async (req, res) => {
     const rawOrders = [];
     for (const batch of chunk(orderIds, 50)) {
       const detailResponse = await fetch(
-        `${FASTSPRING_API_BASE}/orders/${batch.join(",")}`,
-        { headers: { Authorization: authHeader } },
+        `${req.fs.apiBase}/orders/${batch.join(",")}`,
+        { headers: { Authorization: req.fs.auth } },
       );
       const detailData = await detailResponse.json();
       if (!detailResponse.ok) {

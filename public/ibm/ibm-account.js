@@ -1,4 +1,5 @@
-const PRODUCT_PATH = "ibm-sub";
+import { ibmFetch } from "./ibm-store.js";
+const PRODUCT_PATH = "hcp-pay-as-you-go";
 
 const lookupEmail = document.getElementById("lookup-email");
 const lookupBtn = document.getElementById("lookup-btn");
@@ -49,7 +50,7 @@ async function loadHistory(accountId) {
   historyList.appendChild(loading);
 
   try {
-    const res = await fetch(
+    const res = await ibmFetch(
       `/api/accounts/${encodeURIComponent(accountId)}/history`,
     );
     const data = await res.json();
@@ -120,7 +121,7 @@ async function findAccount() {
   lookupBtn.textContent = "Looking up…";
 
   try {
-    const res = await fetch(
+    const res = await ibmFetch(
       `/api/my-account?email=${encodeURIComponent(email)}&product=${PRODUCT_PATH}`,
     );
     const data = await res.json();
@@ -129,7 +130,7 @@ async function findAccount() {
     member = data.member;
     renderMember();
 
-    const authRes = await fetch(
+    const authRes = await ibmFetch(
       `/api/accounts/${encodeURIComponent(member.accountId)}/authenticate`,
     );
     const authData = await authRes.json();
@@ -164,7 +165,7 @@ async function cancelMembership() {
   cancelBtn.textContent = "Canceling…";
 
   try {
-    const res = await fetch(
+    const res = await ibmFetch(
       `/api/subscriptions/${encodeURIComponent(member.id)}/cancel`,
       { method: "POST" },
     );

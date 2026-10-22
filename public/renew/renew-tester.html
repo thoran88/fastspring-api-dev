@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Managed Sub Renewals</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>
+      (function () {
+        var stored = localStorage.getItem("nova-theme");
+        var theme =
+          stored ||
+          (window.matchMedia("(prefers-color-scheme: light)").matches
+            ? "light"
+            : "dark");
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+    <link rel="stylesheet" href="../shared/styles.css" />
+    <link rel="stylesheet" href="renew.css" />
+  </head>
+
+  <body>
+    <header>
+      <div class="logo">RENEW<span>Managed subscription renewals</span></div>
+      <div style="display: flex; align-items: center; gap: 0.8rem">
+        <a href="../index.html" class="admin-link">← All demos</a>
+        <span class="store-pill" id="store-pill">store: tariqh</span>
+        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme"></button>
+      </div>
+    </header>
+
+    <div class="hero">
+      <h1>Buy a managed sub, then renew it</h1>
+      <p>
+        Checkout runs on SBL popup. Renewals call POST /subscriptions/renew
+        and poll with the same idempotency key until the batch finishes.
+        Test subscriptions only.
+      </p>
+    </div>
+
+    <main class="gym-layout">
+      <!-- 1. Checkout -->
+      <section class="gym-card">
+        <h2>1. Checkout</h2>
+        <p class="gym-sub">
+          Card saves the method, so renew should charge it (Track A). Wire or
+          another invoice method saves nothing, so renew should raise a
+          renewal invoice (Track B).
+        </p>
+
+        <div class="rn-grid">
+          <label class="rn-field">
+            <span>Storefront</span>
+            <input id="storefront" placeholder="tariqh.test.onfastspring.com/popup-xxx" />
+          </label>
+          <label class="rn-field">
+            <span>Product path</span>
+            <input id="product" placeholder="hcp-pay-as-you-go" />
+          </label>
+        </div>
+
+        <div class="rn-actions">
+          <button class="buy-btn rn-btn" id="load-sbl">Load storefront</button>
+          <button class="buy-btn rn-btn" id="buy-btn" disabled>Open checkout</button>
+          <span class="rn-status" id="sbl-status">Storefront not loaded</span>
+        </div>
+
+        <div id="checkout-result" class="rn-note" hidden></div>
+      </section>
+
+      <!-- 2. Renew -->
+      <section class="gym-card">
+        <div class="admin-toolbar">
+          <h2>2. Renew</h2>
+          <button class="admin-refresh-btn" id="add-row">+ Add subscription</button>
+        </div>
+        <p class="gym-sub">
+          Leave price and quantity empty to renew at the current values.
+          netTerms only applies to Track B, so set it at batch level unless you
+          know the sub is on Track B. Simulate is Track A test subs only.
+        </p>
+
+        <div class="rn-table-wrap">
+          <table class="rn-table">
+            <thead>
+              <tr>
+                <th>Subscription</th>
+                <th>Price</th>
+                <th>Qty</th>
+                <th>Item netTerms</th>
+                <th>Simulate</th>
+                <th>Reason code</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+
+        <div class="rn-grid" style="margin-top: 1rem">
+          <label class="rn-field">
+            <span>Batch netTerms (days)</span>
+            <input id="batch-net" type="number" min="0" placeholder="store default" />
+          </label>
+          <label class="rn-field">
+            <span>Idempotency key</span>
+            <input id="key" placeholder="new UUID each send" readonly />
+          </label>
+        </div>
+
+        <div class="rn-actions">
+          <button class="buy-btn rn-btn" id="send-btn">Send renew</button>
+          <button class="admin-refresh-btn" id="poll-btn" disabled>Poll again</button>
+          <button class="admin-refresh-btn" id="stop-btn" disabled>Stop polling</button>
+          <span class="rn-status" id="renew-status"></span>
+        </div>
+
+        <div id="results" class="rn-results" hidden>
+          <h3>Per-subscription results</h3>
+          <div class="rn-table-wrap">
+            <table class="rn-table">
+              <thead>
+                <tr>
+                  <th>Subscription</th>
+                  <th>Track</th>
+                  <th>Action</th>
+                  <th>Result</th>
+                  <th>Invoice</th>
+                  <th>Due</th>
+                  <th>Detail</th>
+                </tr>
+              </thead>
+              <tbody id="result-rows"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <details class="rn-log" open>
+          <summary>Request log</summary>
+          <div id="log"></div>
+        </details>
+      </section>
+    </main>
+
+    <template id="row-tpl">
+      <tr>
+        <td>
+          <input data-f="subscription" placeholder="subscription id" />
+          <div class="rn-sub-info" data-f="info"></div>
+        </td>
+        <td><input data-f="price" type="number" step="0.01" min="0" class="rn-sm" /></td>
+        <td><input data-f="quantity" type="number" min="1" class="rn-sm" /></td>
+        <td><input data-f="netTerms" type="number" min="0" class="rn-sm" /></td>
+        <td>
+          <select data-f="simulate">
+            <option value="">none</option>
+            <option value="success">success</option>
+            <option value="failure">failure</option>
+          </select>
+        </td>
+        <td><input data-f="reasonCode" class="rn-sm" placeholder="optional" /></td>
+        <td class="rn-row-actions">
+          <button class="admin-refresh-btn" data-a="lookup">Check</button>
+          <button class="admin-refresh-btn" data-a="remove">✕</button>
+        </td>
+      </tr>
+    </template>
+
+    <script type="module" src="../shared/admin-theme.js"></script>
+    <script type="module" src="renew-tester.js"></script>
+  </body>
+</html>

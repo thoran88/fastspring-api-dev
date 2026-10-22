@@ -1,5 +1,4 @@
 import express from "express";
-import { FASTSPRING_API_BASE, authHeader } from "../lib/fastspring.js";
 
 const router = express.Router();
 
@@ -9,7 +8,6 @@ const router = express.Router();
 // checkoutUrl the frontend initializes the SDK with. Different checkouts
 // have their own renewal/domain-whitelisting config, so each frontend flow
 // (game store vs gym) passes its own checkoutPath rather than sharing one.
-const FASTSPRING_ACCOUNT = "thoran";
 const DEFAULT_CHECKOUT_PATH = "components-gaming";
 
 // Session creation has to happen server-side - it's the one step that
@@ -23,6 +21,8 @@ router.post("/api/session", async (req, res) => {
     productPath,
     checkoutPath = DEFAULT_CHECKOUT_PATH,
     accountId,
+    // Defaults to US so existing demos are unchanged; IBM sends IE.
+    country = "US",
   } = req.body ?? {};
   // email is intentionally optional - the cc-tester page creates sessions
   // with no email at all so fs-email can be the thing that actually
@@ -32,18 +32,22 @@ router.post("/api/session", async (req, res) => {
     return res.status(400).json({ error: "productPath is required" });
   }
 
+  // req.fs is set by storeMiddleware (server.js) - the account in the URL
+  // has to match the store whose credentials we're calling with.
+  const storeConfig = req.fs;
+
   try {
     const response = await fetch(
-      `${FASTSPRING_API_BASE}/v2/checkouts/${FASTSPRING_ACCOUNT}/${checkoutPath}/sessions`,
+      `${storeConfig.apiBase}/v2/checkouts/${storeConfig.account}/${checkoutPath}/sessions`,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: authHeader,
+          Authorization: storeConfig.auth,
         },
         body: JSON.stringify({
           locale: "en",
-          country: "US",
+          country,
           live: true,
           customer: {
             // Passing accountId attaches this new order to the buyer's

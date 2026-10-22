@@ -1,5 +1,4 @@
 import express from "express";
-import { FASTSPRING_API_BASE, authHeader } from "../lib/fastspring.js";
 
 const router = express.Router();
 
@@ -7,11 +6,11 @@ const router = express.Router();
 // to each other in the dashboard, so pasting the wrong one is an easy
 // mistake to make. If the given ID isn't a subscription, check whether it's
 // actually an order and use *its* subscription instead of just failing.
-async function resolveSubscriptionId(id) {
+async function resolveSubscriptionId(fs, id) {
   const subResponse = await fetch(
-    `${FASTSPRING_API_BASE}/subscriptions/${id}`,
+    `${fs.apiBase}/subscriptions/${id}`,
     {
-      headers: { Authorization: authHeader },
+      headers: { Authorization: fs.auth },
     },
   );
   const subData = await subResponse.json();
@@ -19,8 +18,8 @@ async function resolveSubscriptionId(id) {
     return { subscriptionId: id, resolvedFrom: "subscription" };
   }
 
-  const orderResponse = await fetch(`${FASTSPRING_API_BASE}/orders/${id}`, {
-    headers: { Authorization: authHeader },
+  const orderResponse = await fetch(`${fs.apiBase}/orders/${id}`, {
+    headers: { Authorization: fs.auth },
   });
   const orderData = await orderResponse.json();
   if (orderResponse.ok && orderData.result === "success") {
@@ -41,18 +40,28 @@ async function resolveSubscriptionId(id) {
 // Shared by the single-subscription charge endpoint below and the bulk
 // "simulate monthly rebill" job - both just need this same two-call sequence
 // against an already-resolved subscription id.
-async function chargeSubscription(subscriptionId, amount) {
-  const priceResponse = await fetch(`${FASTSPRING_API_BASE}/subscriptions`, {
+// Price has to be set in the subscription's own currency (e.g. EUR for an
+// IE buyer), not a hardcoded USD.
+async function getSubscriptionCurrency(fs, subscriptionId) {
+  const response = await fetch(`${fs.apiBase}/subscriptions/${subscriptionId}`, {
+    headers: { Authorization: fs.auth },
+  });
+  const data = await response.json();
+  return data.currency || "USD";
+}
+
+async function chargeSubscription(fs, subscriptionId, amount, currency = "USD") {
+  const priceResponse = await fetch(`${fs.apiBase}/subscriptions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: authHeader,
+      Authorization: fs.auth,
     },
     body: JSON.stringify({
       subscriptions: [
         {
           subscription: subscriptionId,
-          pricing: { price: { USD: amount } },
+          pricing: { price: { [currency]: amount } },
         },
       ],
     }),
@@ -66,12 +75,12 @@ async function chargeSubscription(subscriptionId, amount) {
   }
 
   const chargeResponse = await fetch(
-    `${FASTSPRING_API_BASE}/subscriptions/charge`,
+    `${fs.apiBase}/subscriptions/charge`,
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: authHeader,
+        Authorization: fs.auth,
       },
       body: JSON.stringify({
         subscriptions: [{ subscription: subscriptionId }],
@@ -101,18 +110,23 @@ router.post("/api/subscriptions/:id/charge", async (req, res) => {
   }
 
   try {
-    const resolved = await resolveSubscriptionId(inputId);
+    const resolved = await resolveSubscriptionId(req.fs, inputId);
     if (!resolved) {
       return res.status(404).json({
         error: `Could not find a subscription for "${inputId}" - checked it as both a subscription ID and an order ID`,
       });
     }
 
-    await chargeSubscription(resolved.subscriptionId, amount);
+    const currency = await getSubscriptionCurrency(
+      req.fs,
+      resolved.subscriptionId,
+    );
+    await chargeSubscription(req.fs, resolved.subscriptionId, amount, currency);
 
     res.json({
       subscription: resolved.subscriptionId,
       amount,
+      currency,
       result: "success",
       resolvedFrom: resolved.resolvedFrom,
     });
@@ -152,8 +166,8 @@ router.post("/api/subscriptions/bulk-charge", async (req, res) => {
 
   try {
     const subsResponse = await fetch(
-      `${FASTSPRING_API_BASE}/subscriptions?products=${product}&scope=test`,
-      { headers: { Authorization: authHeader } },
+      `${req.fs.apiBase}/subscriptions?products=${product}&scope=test`,
+      { headers: { Authorization: req.fs.auth } },
     );
     const subsData = await subsResponse.json();
     if (!subsResponse.ok) {
@@ -173,16 +187,16 @@ router.post("/api/subscriptions/bulk-charge", async (req, res) => {
 
     const amounts = activeSubs.map(() => randomChargeAmount());
 
-    const priceResponse = await fetch(`${FASTSPRING_API_BASE}/subscriptions`, {
+    const priceResponse = await fetch(`${req.fs.apiBase}/subscriptions`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: authHeader,
+        Authorization: req.fs.auth,
       },
       body: JSON.stringify({
         subscriptions: activeSubs.map((s, i) => ({
           subscription: s.id,
-          pricing: { price: { USD: amounts[i] } },
+          pricing: { price: { [s.currency || "USD"]: amounts[i] } },
         })),
       }),
     });
@@ -205,12 +219,12 @@ router.post("/api/subscriptions/bulk-charge", async (req, res) => {
     let chargeResults = [];
     if (pricedIndexes.length > 0) {
       const chargeResponse = await fetch(
-        `${FASTSPRING_API_BASE}/subscriptions/charge`,
+        `${req.fs.apiBase}/subscriptions/charge`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: authHeader,
+            Authorization: req.fs.auth,
           },
           body: JSON.stringify({
             subscriptions: pricedIndexes.map((i) => ({
@@ -237,6 +251,7 @@ router.post("/api/subscriptions/bulk-charge", async (req, res) => {
       return {
         subscription: s.id,
         amount: amounts[i],
+        currency: s.currency || "USD",
         result: chargeOk ? "success" : "error",
         error: chargeOk
           ? undefined
@@ -262,7 +277,7 @@ router.post("/api/subscriptions/:id/cancel", async (req, res) => {
   const inputId = req.params.id;
 
   try {
-    const resolved = await resolveSubscriptionId(inputId);
+    const resolved = await resolveSubscriptionId(req.fs, inputId);
     if (!resolved) {
       return res.status(404).json({
         error: `Could not find a subscription for "${inputId}" - checked it as both a subscription ID and an order ID`,
@@ -270,8 +285,8 @@ router.post("/api/subscriptions/:id/cancel", async (req, res) => {
     }
 
     const response = await fetch(
-      `${FASTSPRING_API_BASE}/subscriptions/${resolved.subscriptionId}`,
-      { method: "DELETE", headers: { Authorization: authHeader } },
+      `${req.fs.apiBase}/subscriptions/${resolved.subscriptionId}`,
+      { method: "DELETE", headers: { Authorization: req.fs.auth } },
     );
     const data = await response.json();
     const result = data.subscriptions?.[0];

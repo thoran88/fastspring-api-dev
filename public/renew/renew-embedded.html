@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Renew Demo - Embedded</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>
+      (function () {
+        var stored = localStorage.getItem("nova-theme");
+        var theme =
+          stored ||
+          (window.matchMedia("(prefers-color-scheme: light)").matches
+            ? "light"
+            : "dark");
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+    <link rel="stylesheet" href="../shared/styles.css" />
+    <link rel="stylesheet" href="renew.css" />
+  </head>
+
+  <body data-mode="embedded">
+    <header>
+      <div class="logo">RENEW<span>Managed Subscription Renewals</span></div>
+      <div style="display: flex; align-items: center; gap: 0.8rem">
+        <a href="../index.html" class="admin-link">← All demos</a>
+        <a href="renew.html" class="admin-link">Try popup →</a>
+        <a href="renew-admin.html" class="admin-link">Staff admin →</a>
+        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme"></button>
+      </div>
+    </header>
+
+    <div class="hero">
+      <h1>Sign up once. Get billed when the seller renews.</h1>
+      <p>
+        Managed subscription on tariqh (tariqh.test.onfastspring.com/embedded-renew). Pay with a card and
+        renewals charge it. Pay with wire or another invoice method and each
+        renewal sends you an invoice instead.
+      </p>
+    </div>
+
+    <main class="gym-layout">
+      <section class="gym-card">
+        <h2>1. Start your subscription (embedded checkout)</h2>
+        <p class="gym-sub">
+          Test mode. Card 4242 4242 4242 4242 saves the card (Track A).
+          Wire transfer saves nothing (Track B).
+        </p>
+
+        <div class="field-row">
+          <div class="field">
+            <label>First name</label>
+            <input type="text" id="fname" value="Test" />
+          </div>
+          <div class="field">
+            <label>Last name</label>
+            <input type="text" id="lname" value="Buyer" />
+          </div>
+        </div>
+        <div class="field">
+          <label>Email (optional, prefills checkout)</label>
+          <input type="email" id="email" placeholder="you@example.com" />
+        </div>
+        <div class="field">
+          <label>Plan</label>
+          <select id="product"><option>Loading…</option></select>
+        </div>
+
+        <button class="buy-btn" id="start-btn" style="width: auto; padding: 0.6rem 1.4rem">
+          Load checkout
+        </button>
+
+        <!-- SBL renders the embedded checkout into this container. -->
+        <div id="fsc-embedded-checkout-container" class="rn-embedded"></div>
+
+        <div class="error-banner" id="error-banner"></div>
+        <div class="success-banner" id="signup-success" style="display: none">
+          <strong>Subscription started.</strong>
+          <p id="signup-success-detail"></p>
+        </div>
+      </section>
+    </main>
+
+    <script
+      id="fsc-api"
+      src="https://sbl.onfastspring.com/sbl/1.0.9/fastspring-builder.min.js"
+      type="text/javascript"
+      data-storefront="tariqh.test.onfastspring.com/embedded-renew"
+      data-popup-closed="renewPopupClosed"
+      data-popup-webhook-received="renewOrderReceived"
+      data-error-callback="renewSblError"
+    ></script>
+
+    <script type="module" src="../shared/admin-theme.js"></script>
+    <script type="module" src="renew-signup.js"></script>
+  </body>
+</html>

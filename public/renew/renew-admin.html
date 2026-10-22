@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Renew Demo - Staff Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>
+      (function () {
+        var stored = localStorage.getItem("nova-theme");
+        var theme =
+          stored ||
+          (window.matchMedia("(prefers-color-scheme: light)").matches
+            ? "light"
+            : "dark");
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+    <link rel="stylesheet" href="../shared/styles.css" />
+    <link rel="stylesheet" href="renew.css" />
+  </head>
+
+  <body>
+    <script type="module" src="../shared/admin-theme.js"></script>
+    <header>
+      <div class="logo">RENEW<span>Staff Admin</span></div>
+      <div style="display: flex; align-items: center; gap: 0.8rem">
+        <a href="../index.html" class="admin-link">← All demos</a>
+        <a href="renew.html" class="admin-link">← Popup signup</a>
+        <a href="renew-embedded.html" class="admin-link">← Embedded signup</a>
+        <a href="renew-tester.html" class="admin-link">Batch tester →</a>
+        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme"></button>
+      </div>
+    </header>
+
+    <div class="hero">
+      <h1>Renew subscribers</h1>
+      <p>
+        Same as the gym admin, but each renewal is one POST /subscriptions/renew
+        instead of update then charge. FastSpring charges the saved method if
+        there is one, otherwise it raises a renewal invoice and emails the
+        buyer. Test subscriptions only.
+      </p>
+    </div>
+
+    <main class="gym-layout">
+      <section class="gym-card">
+        <div class="admin-toolbar">
+          <h2>Subscribers</h2>
+          <div class="rn-toolbar-controls">
+            <label>Product
+              <select id="product-filter" style="width: auto"><option value="">All managed</option></select>
+            </label>
+            <label>Net terms <input id="net-terms" type="number" min="0" placeholder="default" /></label>
+            <label>Simulate
+              <select id="simulate">
+                <option value="">none</option>
+                <option value="success">success</option>
+                <option value="failure">failure</option>
+              </select>
+            </label>
+            <button id="renew-all-btn" class="admin-refresh-btn">Renew all active</button>
+            <button id="refresh-btn" class="admin-refresh-btn">Refresh</button>
+          </div>
+        </div>
+        <p class="gym-sub">
+          Price is optional. Empty renews at the current price. Net terms only
+          apply when the renewal becomes an invoice. Simulate only works on
+          test subs with a saved card, and fails the whole batch otherwise.
+        </p>
+        <div id="bulk-result" class="charge-result"></div>
+        <div id="members-list"></div>
+      </section>
+    </main>
+
+    <script type="module" src="renew-admin.js"></script>
+  </body>
+</html>

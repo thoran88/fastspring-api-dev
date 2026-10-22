@@ -11,6 +11,8 @@ import accountsRouter from "./routes/accounts.js";
 import quotesRouter from "./routes/quotes.js";
 import invoicesRouter from "./routes/invoices.js";
 import ordersRouter from "./routes/orders.js";
+import renewRouter from "./routes/renew.js";
+import { storeMiddleware } from "./lib/fastspring.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const { PORT = 3000 } = process.env;
@@ -25,6 +27,10 @@ app.use(webhooksRouter);
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
+// Every /api route gets req.fs (which store to call). Defaults to thoran,
+// IBM pages send X-FS-Store: tariqh.
+app.use("/api", storeMiddleware);
+
 app.use(sessionRouter);
 app.use(productsRouter);
 app.use(subscriptionsRouter);
@@ -32,6 +38,7 @@ app.use(accountsRouter);
 app.use(quotesRouter);
 app.use(invoicesRouter);
 app.use(ordersRouter);
+app.use(renewRouter);
 
 app.listen(PORT, () => {
   console.log(`Payment Components demo running at http://localhost:${PORT}`);

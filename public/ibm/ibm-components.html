@@ -1,0 +1,568 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <title>HCP — Add Payment Method (Checkout Components)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <script src="https://cdn.onfastspring.com/checkout-sdk/latest/fastspring-sdk.js"></script>
+    <!-- Shared styles only for the component skeleton / error / success
+         helpers. Everything else on this page is scoped below to match the
+         HCP billing portal look (light only, no theme toggle). -->
+    <link rel="stylesheet" href="../shared/styles.css" />
+    <style>
+      :root {
+        --hcp-black: #0c0c0e;
+        --hcp-text: #0c0c0e;
+        --hcp-text-muted: #656a76;
+        --hcp-border: #dedfe3;
+        --hcp-border-strong: #c2c5cb;
+        --hcp-surface: #ffffff;
+        --hcp-sidebar: #f7f7f8;
+        --hcp-active-bg: #f1f2f3;
+        --hcp-blue: #1060ff;
+        --hcp-green: #15803d;
+        --hcp-font:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, Helvetica,
+          Arial, sans-serif;
+      }
+
+      html,
+      body {
+        margin: 0;
+        background: var(--hcp-surface);
+        color: var(--hcp-text);
+        font-family: var(--hcp-font);
+      }
+
+      /* ---------- Top bar ---------- */
+      .hcp-topbar {
+        height: 60px;
+        background: var(--hcp-black);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 14px 0 20px;
+        box-sizing: border-box;
+      }
+      .hcp-topbar-left {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+      }
+      .hcp-topbar-right {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+      }
+      /* HashiCorp logo from their public Flight icon set
+         (@hashicorp/flight-icons, same icon as #flight-hashicorp-16 on the
+         HCP portal). Used as a mask so it renders white like theirs. */
+      .hcp-mark {
+        display: block;
+        width: 28px;
+        height: 28px;
+        background: #ffffff;
+        -webkit-mask: url("https://cdn.jsdelivr.net/npm/@hashicorp/flight-icons@5.2.0/svg/hashicorp-24.svg")
+          center / contain no-repeat;
+        mask: url("https://cdn.jsdelivr.net/npm/@hashicorp/flight-icons@5.2.0/svg/hashicorp-24.svg")
+          center / contain no-repeat;
+      }
+      .hcp-dropdown {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        height: 37px;
+        padding: 0 12px;
+        border: 1px solid #4b4e57;
+        border-radius: 6px;
+        color: #ffffff;
+        font-size: 15px;
+        font-weight: 500;
+        background: transparent;
+        box-sizing: border-box;
+      }
+      .hcp-dropdown svg {
+        flex: none;
+      }
+      .hcp-icon-btn {
+        padding: 0 9px 0 11px;
+        gap: 7px;
+      }
+      .hcp-avatar-btn {
+        padding: 0 8px 0 3px;
+        gap: 6px;
+      }
+      .hcp-avatar {
+        width: 30px;
+        height: 30px;
+        border-radius: 4px;
+        background:
+          linear-gradient(
+              90deg,
+              transparent 33%,
+              #d9a273 33% 66%,
+              transparent 66%
+            )
+            0 33% / 100% 34% no-repeat,
+          linear-gradient(transparent 33%, #d9a273 33% 66%, transparent 66%) 33%
+            0 / 34% 100% no-repeat,
+          #f3e3d2;
+      }
+
+      /* ---------- Layout ---------- */
+      .hcp-body {
+        display: flex;
+        min-height: calc(100vh - 60px);
+      }
+      .hcp-sidebar {
+        width: 280px;
+        flex: none;
+        background: var(--hcp-surface);
+        border-right: 1px solid var(--hcp-border);
+        padding: 22px 16px;
+        box-sizing: border-box;
+        position: relative;
+      }
+      .hcp-collapse {
+        position: absolute;
+        top: 17px;
+        right: -23px;
+        width: 22px;
+        height: 34px;
+        background: var(--hcp-surface);
+        border: 1px solid var(--hcp-border);
+        border-left: none;
+        border-radius: 0 6px 6px 0;
+        display: grid;
+        place-items: center;
+        color: #3b3d45;
+      }
+      .hcp-back {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 6px 10px;
+        color: var(--hcp-text);
+        font-size: 15px;
+        font-weight: 500;
+        text-decoration: none;
+      }
+      .hcp-nav-label {
+        margin: 32px 8px 10px;
+        color: var(--hcp-text-muted);
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .hcp-nav {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .hcp-nav a {
+        display: block;
+        padding: 8px 8px;
+        border-radius: 6px;
+        color: var(--hcp-text);
+        font-size: 15px;
+        font-weight: 500;
+        line-height: 20px;
+        text-decoration: none;
+        position: relative;
+      }
+      .hcp-nav a:hover {
+        background: var(--hcp-active-bg);
+      }
+      .hcp-nav a.active {
+        background: var(--hcp-active-bg);
+        color: var(--hcp-blue);
+      }
+      .hcp-nav a.active::before {
+        content: "";
+        position: absolute;
+        left: -16px;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: var(--hcp-blue);
+      }
+
+      .hcp-main {
+        flex: 1;
+        min-width: 0;
+        padding: 29px 64px 60px;
+      }
+      .hcp-breadcrumb {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 9px;
+        font-size: 14px;
+        color: var(--hcp-text-muted);
+      }
+      .hcp-breadcrumb .sep {
+        color: var(--hcp-border-strong);
+      }
+      .hcp-breadcrumb .current {
+        color: var(--hcp-text);
+      }
+      .hcp-title {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin: 19px 0 82px;
+      }
+      .hcp-title-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        background: #f1f2f3;
+        display: grid;
+        place-items: center;
+        color: #3b3d45;
+      }
+      .hcp-title h1 {
+        margin: 0;
+        font-size: 32px;
+        font-weight: 700;
+        letter-spacing: -0.015em;
+      }
+
+      /* ---------- Cards ---------- */
+      .hcp-card {
+        max-width: 702px;
+        border: 1px solid var(--hcp-border);
+        border-radius: 6px;
+        background: var(--hcp-surface);
+        padding: 24px 24px 28px;
+        box-sizing: border-box;
+      }
+      .hcp-card + .hcp-card,
+      .hcp-card + .success-banner {
+        margin-top: 20px;
+      }
+      .hcp-card-title {
+        font-size: 15px;
+        font-weight: 400;
+        color: var(--hcp-text);
+        margin: 0 0 14px;
+      }
+      .hcp-checks {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        font-size: 14.5px;
+        line-height: 18px;
+        color: #3b3d45;
+      }
+      .hcp-checks li {
+        display: flex;
+        gap: 8px;
+      }
+      .hcp-checks svg {
+        flex: none;
+        margin-top: 1px;
+        color: #2a8a3e;
+      }
+
+      /* Payment form card */
+      .hcp-payment .hcp-card-title {
+        margin-bottom: 4px;
+      }
+
+      /* Skeleton + error/success re-tinted for the light HCP palette. */
+      .skeleton-line {
+        background: linear-gradient(
+          90deg,
+          #f1f2f3 25%,
+          #e6e7ea 50%,
+          #f1f2f3 75%
+        );
+        background-size: 200% 100%;
+      }
+      .components-wrap.is-loading #email-element {
+        visibility: hidden;
+        position: absolute;
+      }
+
+      /* The fs-email and fs-card iframes carry their own inner whitespace
+         (~7px around the email field, ~25px under it, ~27px around the card
+         form) that the Style API's card.padding doesn't remove. Pull the
+         containers out by that much so the inputs line up with the card
+         title and sit a normal gap apart. */
+      #email-element {
+        margin: 0 -7px -20px;
+      }
+      #card-element {
+        margin: -24px -27px 0;
+      }
+
+      /* Pay button frame is inset ~6px and the card frame keeps room for a
+         zip row that IE buyers don't get, so pull the button up and out to
+         line up with the inputs above it. */
+      #pay-button-element {
+        margin: -20px -6px 0;
+      }
+
+      /* Wallet slots. The SDK mounts each wallet iframe at height:100%
+         (= the 150px iframe default) and only switches to a px height when
+         the component posts a "resize" message, or hides the slot when it
+         reports Google/Apple Pay isn't available for this session. Keep the
+         slot collapsed until a real height arrives, so there's never a blank
+         gap, and let FastSpring size it after that (button ~48px, 3DS
+         challenge ~600px). */
+      #google-pay-element iframe[style*="height: 100%"],
+      #apple-pay-element iframe[style*="height: 100%"] {
+        display: block;
+        height: 0 !important;
+      }
+      #google-pay-element:has(iframe:not([style*="height: 100%"])),
+      #apple-pay-element:has(iframe:not([style*="height: 100%"])) {
+        margin: 12px 0;
+      }
+
+      @media (max-width: 1000px) {
+        .hcp-sidebar {
+          display: none;
+        }
+        .hcp-main {
+          padding: 18px 16px 48px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Checkout Components version of the IBM / HCP add-payment-method
+         screen, styled after the HCP billing portal. Uses the tariqh
+         components-ibm checkout on prod via a backend session
+         (POST /api/session, X-FS-Store: tariqh). -->
+    <script type="module" src="fs-sdk-ibm.js"></script>
+    <script type="module" src="fs-components-ibm.js"></script>
+
+    <header class="hcp-topbar">
+      <div class="hcp-topbar-left">
+        <span class="hcp-mark" role="img" aria-label="HashiCorp"></span>
+        <span class="hcp-dropdown">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.3"
+            aria-hidden="true"
+          >
+            <rect x="2.5" y="1.5" width="7" height="13" rx="0.5" />
+            <path d="M9.5 6.5h4v8h-4M5 4.5h2M5 7h2M5 9.5h2M5 12h2" />
+          </svg>
+          ibm-demo-org
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 12 12"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.3"
+            aria-hidden="true"
+          >
+            <path d="M3 4.5 6 7.5l3-3" />
+          </svg>
+        </span>
+      </div>
+      <div class="hcp-topbar-right">
+        <span class="hcp-dropdown hcp-icon-btn" aria-hidden="true">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.3"
+          >
+            <circle cx="8" cy="8" r="6.5" />
+            <path
+              d="M6.2 6.2a1.9 1.9 0 1 1 2.6 1.8c-.5.2-.8.6-.8 1.1v.4M8 11.6v.1"
+            />
+          </svg>
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 12 12"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.3"
+          >
+            <path d="M3 4.5 6 7.5l3-3" />
+          </svg>
+        </span>
+        <span class="hcp-dropdown hcp-avatar-btn" aria-hidden="true">
+          <span class="hcp-avatar"></span>
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 12 12"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.3"
+          >
+            <path d="M3 4.5 6 7.5l3-3" />
+          </svg>
+        </span>
+      </div>
+    </header>
+
+    <div class="hcp-body">
+      <aside class="hcp-sidebar">
+        <span class="hcp-collapse" aria-hidden="true"
+          ><svg
+            width="12"
+            height="12"
+            viewBox="0 0 12 12"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.4"
+          >
+            <path d="M6 2.5 2.5 6 6 9.5M9.5 2.5 6 6l3.5 3.5" /></svg
+        ></span>
+        <a href="../index.html" class="hcp-back">
+          <svg
+            width="15"
+            height="15"
+            viewBox="0 0 12 12"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.3"
+            aria-hidden="true"
+          >
+            <path d="M7.5 2.5 4 6l3.5 3.5" />
+          </svg>
+          Back to Dashboard
+        </a>
+        <div class="hcp-nav-label">Billing</div>
+        <ul class="hcp-nav">
+          <li><a href="ibm-account.html">Account summary</a></li>
+          <li><a href="ibm-account.html">Statements</a></li>
+          <li>
+            <a href="ibm-components.html" class="active">Payment methods</a>
+          </li>
+          <li><a href="ibm-account.html">Pricing</a></li>
+        </ul>
+      </aside>
+
+      <main class="hcp-main">
+        <div class="hcp-breadcrumb">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.3"
+            aria-hidden="true"
+          >
+            <rect x="2.5" y="1.5" width="7" height="13" rx="0.5" />
+            <path d="M9.5 6.5h4v8h-4M5 4.5h2M5 7h2M5 9.5h2M5 12h2" />
+          </svg>
+          <span>ibm-demo-org</span>
+          <span class="sep">/</span>
+          <span>Billing: Payment methods</span>
+          <span class="sep">/</span>
+          <span class="current">Manage payment methods</span>
+        </div>
+
+        <div class="hcp-title">
+          <span class="hcp-title-icon" aria-hidden="true">
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.1"
+            >
+              <rect x="1.5" y="3.5" width="13" height="9" rx="1.5" />
+              <path d="M1.5 6.5h13M4 10h2" />
+            </svg>
+          </span>
+          <h1>Add payment method</h1>
+        </div>
+
+        <section class="hcp-card hcp-trial">
+          <p class="hcp-card-title">You are using HCP on trial</p>
+          <ul class="hcp-checks">
+            <li>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 14 14"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                aria-hidden="true"
+              >
+                <path d="m2 7.5 3.2 3L12 3.5" />
+              </svg>
+              After adding your credit card, you will switch to pay-as-you-go
+              (PAYG) plan. However, your charges will be deducted from your
+              credits until you have 0 remaining credits.
+            </li>
+            <li>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 14 14"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                aria-hidden="true"
+              >
+                <path d="m2 7.5 3.2 3L12 3.5" />
+              </svg>
+              Your credit card will be charged at the first of each month for
+              the prior month's resource usage.
+            </li>
+          </ul>
+        </section>
+
+        <section class="hcp-card hcp-payment" id="authorize-view">
+          <p class="hcp-card-title">Payment details</p>
+
+          <div class="components-wrap is-loading" id="components-wrap">
+            <div class="component-skeleton">
+              <div class="skeleton-line"></div>
+              <div class="skeleton-line"></div>
+              <div class="skeleton-line" style="height: 48px"></div>
+              <div class="skeleton-line short"></div>
+            </div>
+            <div id="google-pay-element"></div>
+            <div id="apple-pay-element"></div>
+            <div id="email-element"></div>
+            <div id="card-element"></div>
+            <div id="pay-button-element"></div>
+            <div id="disclosures-element"></div>
+          </div>
+
+          <div class="error-banner" id="error-banner"></div>
+        </section>
+
+        <div
+          class="success-banner"
+          id="authorize-success"
+          style="display: none; max-width: 702px"
+        >
+          <strong>Payment method added.</strong>
+          <p id="authorize-success-detail"></p>
+        </div>
+      </main>
+    </div>
+
+    <script type="module" src="ibm-components.js"></script>
+  </body>
+</html>
