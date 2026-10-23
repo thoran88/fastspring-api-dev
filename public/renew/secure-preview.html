@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Secure checkout preview</title>
+<style>
+body {
+  margin: 0;
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+  background: #f5f6fa;
+  color: #14161d;
+}
+main {
+  max-width: 520px;
+  margin: 60px auto;
+  padding: 0 16px;
+  text-align: center;
+}
+button {
+  background: #4f7df0;
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
+  cursor: pointer;
+}
+#fsc-embedded-checkout-container {
+  margin-top: 24px;
+}
+
+</style></head><body>
+<!-- For embedded instead of popup: change data-storefront to
+     tariqh.test.onfastspring.com/embedded-renew -->
+<script
+  id="fsc-api"
+  src="https://sbl.onfastspring.com/sbl/1.0.9/fastspring-builder.min.js"
+  type="text/javascript"
+  data-storefront="tariqh.test.onfastspring.com/popup-renew"
+  data-access-key="H7V9X7JIQVOMHJB4FXVQOQ"
+></script>
+
+<main>
+  <h1>Archicad Solo</h1>
+  <p>Monthly plan, billed by the seller.</p>
+  <button id="buy">Subscribe</button>
+  <div id="fsc-embedded-checkout-container"></div>
+</main>
+
+<script>
+// Unencrypted secure payload (empty key). Only works on .test. storefronts.
+document.getElementById("buy").addEventListener("click", () => {
+  fastspring.builder.reset();
+  fastspring.builder.secure(
+    {
+      contact: {
+        firstName: "Test",
+        lastName: "Buyer",
+        email: `thoran+${Date.now()}@fastspring.com`,
+      },
+      items: [{ product: "archicad-solo-1m-monthly", quantity: 1 }],
+    },
+    "",
+  );
+  fastspring.builder.checkout();
+});
+
+</script>
+</body></html>
