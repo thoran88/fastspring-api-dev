@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>IBM Invoice at Checkout Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>
+      (function () {
+        var stored = localStorage.getItem("nova-theme");
+        document.documentElement.dataset.theme =
+          stored ||
+          (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+      })();
+    </script>
+    <link rel="stylesheet" href="../shared/styles.css" />
+    <link rel="stylesheet" href="../renew/renew.css" />
+    <link rel="stylesheet" href="test.css" />
+  </head>
+
+  <body>
+    <header>
+      <div class="logo">IBM DS<span>Invoice at checkout: what IBM sees</span></div>
+      <div style="display: flex; align-items: center; gap: 0.8rem">
+        <a href="../index.html" class="admin-link">← All demos</a>
+        <a href="../renew/renew-admin.html" class="admin-link">Renew admin →</a>
+        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme"></button>
+      </div>
+    </header>
+
+    <div class="hero">
+      <h1>Simulate IBM's embedded checkout</h1>
+      <p>
+        Storefront <code>tariqh.test.onfastspring.com/embedded-ibm-ds</code>. Every SBL
+        callback, the GET /orders lookup IBM does off the callback, and every webhook
+        land in one timeline. Webhooks IBM doesn't consume today are flagged.
+      </p>
+    </div>
+
+    <main class="it-layout">
+      <section class="gym-card">
+        <h2>1. Checkout</h2>
+        <div class="field-row">
+          <div class="field"><label>First name</label><input type="text" id="fname" value="Test" /></div>
+          <div class="field"><label>Last name</label><input type="text" id="lname" value="Buyer" /></div>
+        </div>
+        <div class="field">
+          <label>Email (use a new one per run, e.g. you+inv1@fastspring.com)</label>
+          <input type="email" id="email" placeholder="you+inv1@fastspring.com" />
+        </div>
+        <div class="field">
+          <label>Product</label>
+          <select id="product"><option>Loading…</option></select>
+        </div>
+        <label class="it-check"><input type="checkbox" id="auto-lookup" checked /> Do IBM's GET /orders lookup on every callback that has an order id</label>
+        <label class="it-check"><input type="checkbox" id="show-data" /> Log data-data-callback (noisy)</label>
+        <button class="buy-btn" id="start-btn" style="width: auto; padding: 0.6rem 1.4rem">Load checkout</button>
+
+        <div id="fsc-embedded-checkout-container" class="rn-embedded"></div>
+        <div class="error-banner" id="error-banner"></div>
+
+        <h2 style="margin-top: 1.5rem">2. Re-check an order later</h2>
+        <p class="gym-sub">After paying the invoice or wire, look the order up again to see when IBM would fulfil.</p>
+        <div class="rn-actions">
+          <input type="text" id="recheck-id" placeholder="Order id" class="it-input" />
+          <button class="rn-btn buy-btn" id="recheck-btn" style="width: auto">Look up</button>
+        </div>
+      </section>
+
+      <section class="gym-card">
+        <div class="it-timeline-head">
+          <h2>Timeline</h2>
+          <div class="rn-actions">
+            <span class="wh-dot" id="sse-dot" data-state="connecting"></span>
+            <button class="rn-btn" id="copy-btn">Copy as JSON</button>
+            <button class="rn-btn" id="clear-btn">Clear</button>
+          </div>
+        </div>
+        <div class="it-summary" id="summary"></div>
+        <div id="timeline" class="it-timeline"><div class="wh-empty">Nothing yet. Load the checkout.</div></div>
+      </section>
+    </main>
+
+    <script
+      id="fsc-api"
+      src="https://sbl.onfastspring.com/sbl/1.0.9/fastspring-builder.min.js"
+      type="text/javascript"
+      data-storefront="tariqh.test.onfastspring.com/embedded-ibm-ds"
+      data-popup-webhook-received="ibmOrderReceived"
+      data-popup-closed="ibmPopupClosed"
+      data-popup-event-received="ibmEventReceived"
+      data-data-callback="ibmDataCallback"
+      data-error-callback="ibmSblError"
+    ></script>
+
+    <script type="module" src="../shared/admin-theme.js"></script>
+    <script type="module" src="test.js"></script>
+  </body>
+</html>
