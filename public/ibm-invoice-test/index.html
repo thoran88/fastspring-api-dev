@@ -53,7 +53,7 @@
             <h2><span class="num">1</span>Buy like an IBM customer</h2>
           </div>
           <p class="muted">
-            Embedded checkout on <code>tariqh.test.onfastspring.com/embedded-ibm-ds</code>, sent as an
+            Archicad Solo managed sub on <code>tariqh.test.onfastspring.com/embedded-ibm-ds</code>, sent as an
             unencrypted secure payload (test mode only). Pick <strong>Invoice</strong>, click Generate
             Invoice, then pay it from the email.
           </p>
@@ -64,17 +64,7 @@
             <label class="span2"><span>Email <span class="hint">use a new one each run</span></span>
               <input type="email" id="email" placeholder="you+inv1@fastspring.com" />
             </label>
-            <label>Product<select id="product"><option>Loading…</option></select></label>
-            <label><span>Price override USD <span class="hint">optional</span></span>
-              <input type="text" id="price-override" placeholder="923.45" />
-            </label>
           </div>
-
-          <details class="advanced">
-            <summary>Advanced</summary>
-            <label class="check"><input type="checkbox" id="use-secure" checked /> Send as secure payload (untick to use builder.tag)</label>
-            <label class="check"><input type="checkbox" id="run-1a" checked /> Run option 1a for comparison</label>
-          </details>
 
           <button class="btn primary" id="start-btn">Load checkout</button>
           <div class="error-banner" id="error-banner"></div>
@@ -120,10 +110,9 @@
             </table>
             <p class="it-muted" id="wh-stats"></p>
           </div>
-        </section>
-      </div>
 
-      <section class="card raw">
+
+      <div class="card raw">
         <details>
           <summary>Raw log <span class="hint">every callback, lookup and webhook payload</span></summary>
           <div class="head-actions" style="margin: 0.75rem 0">
@@ -132,7 +121,9 @@
           </div>
           <div id="raw-log" class="it-timeline"></div>
         </details>
-      </section>
+      </div>
+        </section>
+      </div>
     </main>
 
     <script

@@ -1,4 +1,6 @@
-import { storeFetch, getManagedProducts, esc } from "../renew/renew-api.js";
+import { storeFetch, esc } from "../renew/renew-api.js";
+
+const PRODUCT = "archicad-solo-1m-monthly";
 
 // IBM invoice at checkout demo. Compares:
 // Option 1  - IBM cart id in the secure payload tags, IBM backend matches
@@ -142,7 +144,6 @@ function step1a(label, ok, detail) {
 }
 function render1a() {
   const card = $("opt1a-card");
-  card.hidden = !$("run-1a").checked;
   const steps = run?.opt1a.steps || [];
   $("opt1a-steps").innerHTML = steps.length
     ? steps
@@ -254,7 +255,7 @@ window.ibmEventReceived = (e) => {
   if (!e) return;
   const name = e.event || (e.ecommerce?.purchase ? "purchase event (unnamed)" : "event");
   log(`data-popup-event-received: ${name}`, e["fsc-paymentMethod"] ? `fsc-paymentMethod ${e["fsc-paymentMethod"]}` : "", e);
-  if (!run || !$("run-1a").checked) return;
+  if (!run) return;
 
   if (e.event === "FSC-checkoutStep5") {
     run.method = e["fsc-paymentMethod"];
@@ -293,15 +294,12 @@ async function startCheckout() {
   const email = $("email").value.trim();
   const firstName = $("fname").value.trim();
   const lastName = $("lname").value.trim();
-  const product = $("product").value;
-  const price = $("price-override").value.trim();
+  const product = PRODUCT;
   fs.reset();
 
   let sent;
-  if ($("use-secure").checked) {
-    const item = { product, quantity: 1 };
-    if (price !== "") item.pricing = { price: { USD: Number(price) } };
-    const payload = { items: [item], tags: { [TAG_KEY]: run.cartId } };
+  {
+    const payload = { items: [{ product, quantity: 1 }], tags: { [TAG_KEY]: run.cartId } };
     if (email) payload.contact = { email, firstName, lastName };
     const ready = new Promise((resolve) => {
       const t = setTimeout(() => { cartReady = null; resolve(false); }, 5000);
@@ -315,11 +313,6 @@ async function startCheckout() {
       $("error-banner").style.display = "block";
       return;
     }
-  } else {
-    if (email) fs.recognize({ email, firstName, lastName });
-    fs.tag({ [TAG_KEY]: run.cartId });
-    fs.add(product);
-    sent = { mode: "builder.tag + add", product, tags: { [TAG_KEY]: run.cartId } };
   }
 
   $("payload-box").hidden = false;
@@ -331,22 +324,8 @@ async function startCheckout() {
   renderOpt1();
 }
 
-async function loadProducts() {
-  try {
-    const products = await getManagedProducts();
-    $("product").innerHTML = products
-      .map((p) => `<option value="${esc(p.product)}">${esc(p.display || p.product)}</option>`)
-      .join("");
-  } catch (err) {
-    $("product").innerHTML = "";
-    $("error-banner").textContent = `Couldn't load products: ${err.message}`;
-    $("error-banner").style.display = "block";
-  }
-}
-
 $("start-btn").addEventListener("click", startCheckout);
 $("refresh-wh-btn").addEventListener("click", refreshWebhooks);
-$("run-1a").addEventListener("change", render1a);
 $("clear-btn").addEventListener("click", () => {
   raw.length = 0;
   $("raw-log").innerHTML = "";
@@ -372,4 +351,3 @@ render1a();
 renderWebhooks();
 connectWebhooks();
 refreshWebhooks();
-loadProducts();
