@@ -19,50 +19,35 @@
     </header>
 
     <main class="wrap">
-      <section class="intro">
-        <h1>How IBM can track an invoice purchase</h1>
-        <p class="lead">
-          When a buyer picks Invoice, <code>data-popup-webhook-received</code> doesn't fire and the
-          browser only gets the order reference. This page runs both options side by side on a test store.
-        </p>
-        <div class="options">
-          <div class="option">
-            <div class="option-head"><span class="pill ok">Proposed</span><h3>Option 1: IBM cart id</h3></div>
-            <ol>
-              <li>IBM adds its own cart id to the secure payload <code>tags</code></li>
-              <li>IBM backend gets <code>order.payment.pending</code> with that tag at Generate Invoice</li>
-              <li>IBM front end asks its own backend by cart id</li>
-            </ol>
-            <p class="note">Only documented features. No FastSpring client events.</p>
-          </div>
-          <div class="option">
-            <div class="option-head"><span class="pill warn">Current workaround</span><h3>Option 1a: Sessions v2</h3></div>
-            <ol>
-              <li>Browser reads <code>fsc-paymentMethod</code> and the session id from <code>data-popup-event-received</code></li>
-              <li>Browser calls Sessions v2 to get the order id</li>
-              <li>Then <code>GET /orders/{id}</code></li>
-            </ol>
-            <p class="note">Relies on event fields that aren't in the FastSpring docs.</p>
-          </div>
-        </div>
-      </section>
-
       <div class="grid">
         <section class="card">
           <div class="card-head">
             <h2><span class="num">1</span>Buy like an IBM customer</h2>
           </div>
           <p class="muted">
-            Archicad Solo managed sub on <code>tariqh.test.onfastspring.com/embedded-ibm-ds</code>, sent as an
-            unencrypted secure payload (test mode only). Pick <strong>Invoice</strong>, click Generate
-            Invoice, then pay it from the email.
+            Archicad Solo managed sub on
+            <code>tariqh.test.onfastspring.com/embedded-ibm-ds</code>, sent as
+            an unencrypted secure payload (test mode only). Pick
+            <strong>Invoice</strong>, click Generate Invoice, then pay it from
+            the email.
           </p>
 
           <div class="form">
-            <label>First name<input type="text" id="fname" value="Test" /></label>
-            <label>Last name<input type="text" id="lname" value="Buyer" /></label>
-            <label class="span2"><span>Email <span class="hint">use a new one each run</span></span>
-              <input type="email" id="email" placeholder="you+inv1@fastspring.com" />
+            <label
+              >First name<input type="text" id="fname" value="Test"
+            /></label>
+            <label
+              >Last name<input type="text" id="lname" value="Buyer"
+            /></label>
+            <label class="span2"
+              ><span
+                >Email <span class="hint">use a new one each run</span></span
+              >
+              <input
+                type="email"
+                id="email"
+                placeholder="you+inv1@fastspring.com"
+              />
             </label>
           </div>
 
@@ -80,10 +65,16 @@
         <section class="stack">
           <div class="card">
             <div class="card-head">
-              <h2><span class="num">2</span>Option 1: IBM backend by cart id</h2>
+              <h2>
+                <span class="num">2</span>Option 1: IBM backend by cart id
+              </h2>
               <span class="pill ok">documented</span>
             </div>
-            <p class="muted">Polls a simulated IBM backend every 2s. It answers from the webhooks this server received, matched on <code>tags.ibmCartId</code>.</p>
+            <p class="muted">
+              Polls a simulated IBM backend every 2s. It answers from the
+              webhooks this server received, matched on
+              <code>tags.ibmCartId</code>.
+            </p>
             <ol class="it-steps" id="opt1-steps"></ol>
             <div class="it-result" id="opt1-result"></div>
           </div>
@@ -100,28 +91,44 @@
             <div class="card-head">
               <h2><span class="num">4</span>Webhooks for this purchase</h2>
               <div class="head-actions">
-                <span class="wh-dot" id="sse-dot" data-state="connecting" title="Live feed"></span>
+                <span
+                  class="wh-dot"
+                  id="sse-dot"
+                  data-state="connecting"
+                  title="Live feed"
+                ></span>
                 <button class="btn small" id="refresh-wh-btn">Refresh</button>
               </div>
             </div>
             <table class="it-table">
-              <thead><tr><th>Time</th><th>Event</th><th>Cart id</th><th>IBM consumes</th></tr></thead>
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Event</th>
+                  <th>Cart id</th>
+                  <th>IBM consumes</th>
+                </tr>
+              </thead>
               <tbody id="wh-rows"></tbody>
             </table>
             <p class="it-muted" id="wh-stats"></p>
           </div>
 
-
-      <div class="card raw">
-        <details>
-          <summary>Raw log <span class="hint">every callback, lookup and webhook payload</span></summary>
-          <div class="head-actions" style="margin: 0.75rem 0">
-            <button class="btn small" id="copy-btn">Copy as JSON</button>
-            <button class="btn small" id="clear-btn">Clear</button>
+          <div class="card raw">
+            <details>
+              <summary>
+                Raw log
+                <span class="hint"
+                  >every callback, lookup and webhook payload</span
+                >
+              </summary>
+              <div class="head-actions" style="margin: 0.75rem 0">
+                <button class="btn small" id="copy-btn">Copy as JSON</button>
+                <button class="btn small" id="clear-btn">Clear</button>
+              </div>
+              <div id="raw-log" class="it-timeline"></div>
+            </details>
           </div>
-          <div id="raw-log" class="it-timeline"></div>
-        </details>
-      </div>
         </section>
       </div>
     </main>
