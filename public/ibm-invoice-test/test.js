@@ -148,7 +148,7 @@ function render1a() {
     ? steps
         .map((st) => `<li class="${st.ok ? "done" : "fail"}"><span class="it-dot">${st.ok ? "✓" : "!"}</span><div>${esc(st.label)}<div class="it-detail">${esc(st.detail)}</div></div></li>`)
         .join("")
-    : `<li><span class="it-dot">·</span><div class="it-muted">Runs after the buyer clicks Generate Invoice.</div></li>`;
+    : `<li><span class="it-dot">·</span><div class="it-detail">Runs after the buyer clicks Generate Invoice.</div></li>`;
 }
 
 async function runOpt1a(fscUrl) {
@@ -203,10 +203,10 @@ function renderWebhooks() {
           const consumed = IBM_CONSUMES.has(e.type);
           return `<tr><td>${new Date(e.created).toISOString().slice(11, 19)}</td><td>${esc(e.type)}</td>` +
             `<td><span class="it-badge ${has ? "ok" : "miss"}">${has ? "yes" : "no"}</span></td>` +
-            `<td><span class="it-badge ${consumed ? "ok" : "warn"}">${consumed ? "yes" : "no, needs adding"}</span></td></tr>`;
+            `<td><span class="it-badge ${consumed ? "ok" : "warn"}">${consumed ? "yes" : "needs adding"}</span></td></tr>`;
         })
         .join("")
-    : `<tr><td colspan="4" class="it-muted">${run ? "Waiting for webhooks…" : "Load the checkout to start."}</td></tr>`;
+    : `<tr><td colspan="4" class="it-detail">${run ? "Waiting for webhooks…" : "Load the checkout to start."}</td></tr>`;
 }
 
 async function refreshWebhooks() {
@@ -369,6 +369,7 @@ $("copy-btn").addEventListener("click", async () => {
 
 renderOpt1();
 render1a();
+renderWebhooks();
 connectWebhooks();
 refreshWebhooks();
 loadProducts();
