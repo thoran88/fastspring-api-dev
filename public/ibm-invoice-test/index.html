@@ -51,6 +51,11 @@
           <label>Product</label>
           <select id="product"><option>Loading…</option></select>
         </div>
+        <label class="it-check"><input type="checkbox" id="use-secure" checked /> Send as secure payload like IBM (unencrypted, test storefront only)</label>
+        <div class="field">
+          <label>Price override USD (secure payload only, blank = catalog price)</label>
+          <input type="text" id="price-override" placeholder="e.g. 923.45" />
+        </div>
         <label class="it-check"><input type="checkbox" id="use-cart-tag" checked /> Option 1: tag the checkout with an IBM cart id (ibmCartId)</label>
         <label class="it-check"><input type="checkbox" id="auto-lookup" checked /> Do IBM's GET /orders lookup on every callback that has an order id</label>
         <label class="it-check"><input type="checkbox" id="show-data" /> Log data-data-callback (noisy)</label>

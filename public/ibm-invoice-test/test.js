@@ -367,7 +367,7 @@ document.getElementById("start-btn").addEventListener("click", () => {
   const email = document.getElementById("email").value.trim();
   fs.reset();
   resetWorkaround();
-  if (email) {
+  if (email && !document.getElementById("use-secure").checked) {
     fs.recognize({
       email,
       firstName: document.getElementById("fname").value.trim(),
@@ -377,17 +377,40 @@ document.getElementById("start-btn").addEventListener("click", () => {
   cartTag.value = null;
   cartTag.sources = [];
   cartTag.startedAt = Date.now();
-  if (document.getElementById("use-cart-tag").checked) {
-    cartTag.value = newCartId();
-    fs.tag({ [CART_TAG_KEY]: cartTag.value });
+  if (document.getElementById("use-cart-tag").checked) cartTag.value = newCartId();
+
+  const useSecure = document.getElementById("use-secure").checked;
+  const priceOverride = document.getElementById("price-override").value.trim();
+  let sent;
+
+  if (useSecure) {
+    // Same shape IBM sends: contact, item with price override, tags. Empty
+    // key = unencrypted, which SBL only accepts on .test. storefronts.
+    const item = { product: productSelect.value, quantity: 1 };
+    if (priceOverride !== "") item.pricing = { price: { USD: Number(priceOverride) } };
+    const payload = { items: [item] };
+    if (email) {
+      payload.contact = {
+        email,
+        firstName: document.getElementById("fname").value.trim(),
+        lastName: document.getElementById("lname").value.trim(),
+      };
+    }
+    if (cartTag.value) payload.tags = { [CART_TAG_KEY]: cartTag.value };
+    fs.secure(payload, "");
+    sent = { mode: "secure (unencrypted)", payload };
+  } else {
+    if (cartTag.value) fs.tag({ [CART_TAG_KEY]: cartTag.value });
+    fs.add(productSelect.value);
+    sent = { mode: "builder.tag + add", product: productSelect.value, tags: cartTag.value ? { [CART_TAG_KEY]: cartTag.value } : null };
   }
-  fs.add(productSelect.value);
   fs.checkout();
-  add("callback", "checkout loaded", `product ${productSelect.value}${cartTag.value ? ` · tagged ${CART_TAG_KEY}=${cartTag.value}` : ""}`, {
-    email,
-    product: productSelect.value,
-    tags: cartTag.value ? { [CART_TAG_KEY]: cartTag.value } : null,
-  });
+  add(
+    "callback",
+    "checkout loaded",
+    `${sent.mode} · product ${productSelect.value}${priceOverride && useSecure ? ` · price USD ${priceOverride}` : ""}${cartTag.value ? ` · tagged ${CART_TAG_KEY}=${cartTag.value}` : ""}`,
+    { email, ...sent },
+  );
 });
 
 document.getElementById("recheck-btn").addEventListener("click", () => {
