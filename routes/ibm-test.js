@@ -50,4 +50,39 @@ router.get("/api/ibm-test/order/:id", async (req, res) => {
   }
 });
 
+// IBM's workaround (option 1a in Girish's thread): the browser only gets
+// the order reference and the session id (inside fsc-url) for an invoice
+// purchase, so they call the Sessions v2 API with the session id to get the
+// real order id. Same call IBM would make:
+// GET /session-service/v2/checkouts/{store}/{storefront}/sessions/{sessionId}
+router.get("/api/ibm-test/session/:storefront/:sessionId", async (req, res) => {
+  const started = Date.now();
+  const url =
+    `${req.fs.apiBase}/session-service/v2/checkouts/${encodeURIComponent(req.fs.account)}` +
+    `/${encodeURIComponent(req.params.storefront)}/sessions/${encodeURIComponent(req.params.sessionId)}`;
+  try {
+    const response = await fetch(url, { headers: { Authorization: req.fs.auth } });
+    const text = await response.text();
+    let body;
+    try {
+      body = JSON.parse(text);
+    } catch {
+      body = { raw: text };
+    }
+    res.json({
+      httpStatus: response.status,
+      ms: Date.now() - started,
+      url: url.replace(req.fs.apiBase, ""),
+      orderId: body?.order?.orderId ?? null,
+      orderReference: body?.order?.orderReference ?? null,
+      checkoutStatus: body?.checkoutStatus ?? null,
+      paymentMethodType: body?.order?.payment?.paymentMethodType ?? null,
+      body,
+    });
+  } catch (err) {
+    console.error("IBM test session lookup error", err);
+    res.status(502).json({ error: err.message });
+  }
+});
+
 export default router;

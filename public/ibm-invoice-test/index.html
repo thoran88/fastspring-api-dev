@@ -51,6 +51,7 @@
           <label>Product</label>
           <select id="product"><option>Loading…</option></select>
         </div>
+        <label class="it-check"><input type="checkbox" id="use-cart-tag" checked /> Option 1: tag the checkout with an IBM cart id (ibmCartId)</label>
         <label class="it-check"><input type="checkbox" id="auto-lookup" checked /> Do IBM's GET /orders lookup on every callback that has an order id</label>
         <label class="it-check"><input type="checkbox" id="show-data" /> Log data-data-callback (noisy)</label>
         <button class="buy-btn" id="start-btn" style="width: auto; padding: 0.6rem 1.4rem">Load checkout</button>
@@ -58,11 +59,15 @@
         <div id="fsc-embedded-checkout-container" class="rn-embedded"></div>
         <div class="error-banner" id="error-banner"></div>
 
-        <h2 style="margin-top: 1.5rem">2. Re-check an order later</h2>
+        <h2 style="margin-top: 1.5rem">2. Re-check later</h2>
         <p class="gym-sub">After paying the invoice or wire, look the order up again to see when IBM would fulfil.</p>
         <div class="rn-actions">
           <input type="text" id="recheck-id" placeholder="Order id" class="it-input" />
           <button class="rn-btn buy-btn" id="recheck-btn" style="width: auto">Look up</button>
+        </div>
+        <div class="rn-actions" style="margin-top: 0.5rem">
+          <input type="text" id="session-id" placeholder="Session id (from fsc-url)" class="it-input" />
+          <button class="rn-btn buy-btn" id="session-btn" style="width: auto">Sessions v2</button>
         </div>
       </section>
 
@@ -71,6 +76,7 @@
           <h2>Timeline</h2>
           <div class="rn-actions">
             <span class="wh-dot" id="sse-dot" data-state="connecting"></span>
+            <button class="rn-btn" id="refresh-wh-btn">Refresh webhooks</button>
             <button class="rn-btn" id="copy-btn">Copy as JSON</button>
             <button class="rn-btn" id="clear-btn">Clear</button>
           </div>

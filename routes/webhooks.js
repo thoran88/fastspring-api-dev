@@ -9,6 +9,18 @@ const router = express.Router();
 // console output.
 const webhookClients = new Set();
 
+// Last events received and signature rejects, so a page opened after the
+// event (or a delivery problem) is still visible via /api/webhooks/recent.
+const recentEvents = [];
+const RECENT_MAX = 200;
+const deliveryStats = { received: 0, rejected: 0, lastRejectAt: null, lastRejectReason: null };
+
+function recordReject(reason) {
+  deliveryStats.rejected += 1;
+  deliveryStats.lastRejectAt = new Date().toISOString();
+  deliveryStats.lastRejectReason = reason;
+}
+
 function broadcastWebhookEvent(event) {
   const frame = `data: ${JSON.stringify(event)}\n\n`;
   for (const client of webhookClients) {
@@ -24,6 +36,7 @@ router.post(
   (req, res) => {
     const signature = req.get("x-fs-signature");
     if (!signature) {
+      recordReject("missing signature");
       return res.status(400).send("Missing X-FS-Signature header");
     }
 
@@ -40,6 +53,7 @@ router.post(
 
     if (!valid) {
       console.warn("Webhook signature mismatch - rejecting");
+      recordReject("signature mismatch");
       return res.status(401).send("Invalid signature");
     }
 
@@ -64,6 +78,9 @@ router.post(
         );
       }
 
+      deliveryStats.received += 1;
+      recentEvents.unshift({ receivedAt: new Date().toISOString(), event });
+      recentEvents.length = Math.min(recentEvents.length, RECENT_MAX);
       broadcastWebhookEvent(event);
     }
 
@@ -89,6 +106,10 @@ router.get("/api/webhooks/stream", (req, res) => {
     clearInterval(heartbeat);
     webhookClients.delete(res);
   });
+});
+
+router.get("/api/webhooks/recent", (req, res) => {
+  res.json({ stats: deliveryStats, events: recentEvents });
 });
 
 export default router;
