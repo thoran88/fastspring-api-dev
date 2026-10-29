@@ -266,7 +266,21 @@ async function lookupSession(sessionId, reason) {
     return null;
   }
 }
+// Resolves once SBL reports a cart with items, so checkout() isn't called
+// on an empty session (that's what returns 400 empty-session).
+let cartReady = null;
+function waitForCart(timeoutMs = 5000) {
+  return new Promise((resolve) => {
+    const t = setTimeout(() => { cartReady = null; resolve(false); }, timeoutMs);
+    cartReady = () => { clearTimeout(t); cartReady = null; resolve(true); };
+  });
+}
+function cartHasItems(data) {
+  return (data?.groups || []).some((g) => (g.items || []).some((i) => i.selected !== false));
+}
+
 window.ibmDataCallback = (data) => {
+  if (cartReady && cartHasItems(data)) cartReady();
   if (!showData.checked) return;
   const hash = JSON.stringify([data?.groups?.length, data?.total, data?.currency, data?.country]);
   if (hash === lastDataHash) return;
@@ -356,7 +370,7 @@ async function loadProducts() {
   }
 }
 
-document.getElementById("start-btn").addEventListener("click", () => {
+document.getElementById("start-btn").addEventListener("click", async () => {
   errorBanner.style.display = "none";
   const fs = window.fastspring?.builder;
   if (!fs) {
@@ -397,8 +411,15 @@ document.getElementById("start-btn").addEventListener("click", () => {
       };
     }
     if (cartTag.value) payload.tags = { [CART_TAG_KEY]: cartTag.value };
+    const ready = waitForCart();
     fs.secure(payload, "");
     sent = { mode: "secure (unencrypted)", payload };
+    if (!(await ready)) {
+      add("error", "secure payload not applied", "no items in cart 5s after builder.secure(), checkout not opened", payload);
+      errorBanner.textContent = "Secure payload wasn't applied (cart still empty). Check the payload in the timeline.";
+      errorBanner.style.display = "block";
+      return;
+    }
   } else {
     if (cartTag.value) fs.tag({ [CART_TAG_KEY]: cartTag.value });
     fs.add(productSelect.value);
