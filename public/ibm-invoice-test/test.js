@@ -13,14 +13,23 @@ const STOREFRONT = "embedded-ibm-ds";
 const TAG_KEY = "ibmCartId";
 const POLL_MS = 2000;
 const POLL_MAX_MS = 20 * 60 * 1000;
-// Webhooks IBM Digital Sales consumes today.
-const IBM_CONSUMES = new Set([
-  "order.completed",
-  "subscription.updated",
-  "subscription.charge.completed",
-  "subscription.charge.failed",
-  "return.created",
-]);
+// IBM Digital Sales production webhook config (app, Developer Tools > Webhooks):
+// CIS Commerce: order.completed (expanded, live and test)
+// ESH PROD: subscription.updated, subscription.charge.completed,
+//           subscription.charge.failed, return.created (live only)
+const IBM_ENDPOINTS = {
+  "order.completed": { name: "CIS Commerce", note: "live + test" },
+  "subscription.updated": { name: "ESH", note: "live only" },
+  "subscription.charge.completed": { name: "ESH", note: "live only" },
+  "subscription.charge.failed": { name: "ESH", note: "live only" },
+  "return.created": { name: "ESH", note: "live only" },
+};
+// Where option 1 would add the new events.
+const SUGGESTED = {
+  "order.payment.pending": "add to CIS Commerce",
+  "invoice.created": "optional, CIS Commerce",
+  "renewal.invoice.created": "add to ESH for /renew",
+};
 // Events worth showing in the webhook table.
 const RELEVANT = new Set([
   "order.payment.pending",
@@ -30,6 +39,8 @@ const RELEVANT = new Set([
   "order.canceled",
   "order.failed",
   "renewal.invoice.created",
+  "subscription.updated",
+  "subscription.charge.completed",
 ]);
 
 const $ = (id) => document.getElementById(id);
@@ -77,14 +88,14 @@ function renderOpt1() {
       state: run ? "done" : "",
     },
     {
-      label: "Invoice created: backend has order.payment.pending",
+      label: "Invoice created: CIS Commerce gets order.payment.pending",
       detail: s?.data?.status === "invoice_pending" || s?.data?.status === "paid"
         ? `order ${s.data.orderId} · ${s.data.reference}`
-        : run ? `polling IBM backend (${s.polls} polls)` : "",
+        : run ? `front end polling CIS Commerce (${s.polls} polls)` : "",
       state: s?.data?.status === "invoice_pending" || s?.data?.status === "paid" ? "done" : run ? "active" : "",
     },
     {
-      label: "Paid: backend has order.completed",
+      label: "Paid: CIS Commerce gets order.completed (already subscribed)",
       detail: s?.data?.status === "paid" ? `order ${s.data.orderId}` : "",
       state: s?.data?.status === "paid" ? "done" : s?.data?.status === "invoice_pending" ? "active" : "",
     },
@@ -201,10 +212,20 @@ function renderWebhooks() {
     ? rows
         .map((e) => {
           const has = e.data?.tags?.[TAG_KEY] === run.cartId;
-          const consumed = IBM_CONSUMES.has(e.type);
+          const ep = IBM_ENDPOINTS[e.type];
+          const live = e.live === true;
+          let cell;
+          if (ep) {
+            const reaches = live || ep.note !== "live only";
+            cell = `<span class="it-badge ${reaches ? "ok" : "warn"}">${esc(ep.name)}</span>` +
+              (reaches ? "" : ` <span class="it-detail">live only, test order won't reach it</span>`);
+          } else {
+            cell = `<span class="it-badge miss">not subscribed</span>` +
+              (SUGGESTED[e.type] ? ` <span class="it-detail">${esc(SUGGESTED[e.type])}</span>` : "");
+          }
           return `<tr><td>${new Date(e.created).toISOString().slice(11, 19)}</td><td>${esc(e.type)}</td>` +
             `<td><span class="it-badge ${has ? "ok" : "miss"}">${has ? "yes" : "no"}</span></td>` +
-            `<td><span class="it-badge ${consumed ? "ok" : "warn"}">${consumed ? "yes" : "needs adding"}</span></td></tr>`;
+            `<td>${cell}</td></tr>`;
         })
         .join("")
     : `<tr><td colspan="4" class="it-detail">${run ? "Waiting for webhooks…" : "Load the checkout to start."}</td></tr>`;
