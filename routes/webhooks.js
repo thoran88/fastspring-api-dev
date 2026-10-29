@@ -15,6 +15,11 @@ const recentEvents = [];
 const RECENT_MAX = 200;
 const deliveryStats = { received: 0, rejected: 0, lastRejectAt: null, lastRejectReason: null };
 
+// Read by the IBM test "backend" (routes/ibm-test.js) to look up a cart id.
+export function getRecentEvents() {
+  return recentEvents;
+}
+
 function recordReject(reason) {
   deliveryStats.rejected += 1;
   deliveryStats.lastRejectAt = new Date().toISOString();

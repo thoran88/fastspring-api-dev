@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>IBM Invoice at Checkout Test</title>
+    <title>IBM Invoice at Checkout Demo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <script>
       (function () {
@@ -19,77 +19,116 @@
 
   <body>
     <header>
-      <div class="logo">IBM DS<span>Invoice at checkout: what IBM sees</span></div>
+      <div class="logo">IBM DS<span>Invoice at checkout demo</span></div>
       <div style="display: flex; align-items: center; gap: 0.8rem">
         <a href="../index.html" class="admin-link">← All demos</a>
-        <a href="../renew/renew-admin.html" class="admin-link">Renew admin →</a>
         <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme"></button>
       </div>
     </header>
 
-    <div class="hero">
-      <h1>Simulate IBM's embedded checkout</h1>
+    <div class="hero it-hero">
+      <h1>How IBM can track an invoice purchase</h1>
       <p>
-        Storefront <code>tariqh.test.onfastspring.com/embedded-ibm-ds</code>. Every SBL
-        callback, the GET /orders lookup IBM does off the callback, and every webhook
-        land in one timeline. Webhooks IBM doesn't consume today are flagged.
+        When a buyer picks Invoice, <code>data-popup-webhook-received</code> doesn't fire and the
+        browser only gets the order reference. This page compares two ways for IBM to get the order.
       </p>
+      <div class="it-options">
+        <div><strong>Option 1 (proposed)</strong> IBM puts its own cart id in the secure payload tags.
+          Its backend gets <code>order.payment.pending</code> with that tag at Generate Invoice.
+          Its front end asks its own backend. No FastSpring client events used.</div>
+        <div><strong>Option 1a (Adam's workaround)</strong> Browser reads <code>fsc-paymentMethod</code>
+          and the session id from <code>data-popup-event-received</code>, then calls Sessions v2 for the
+          order id. Relies on undocumented event fields.</div>
+      </div>
     </div>
 
     <main class="it-layout">
       <section class="gym-card">
-        <h2>1. Checkout</h2>
+        <h2>1. Buy like an IBM customer</h2>
+        <p class="gym-sub">
+          Storefront <code>tariqh.test.onfastspring.com/embedded-ibm-ds</code>, managed sub, sent as an
+          unencrypted secure payload (test mode only). Pick <strong>Invoice</strong> and click
+          Generate Invoice, then pay it from the email.
+        </p>
         <div class="field-row">
           <div class="field"><label>First name</label><input type="text" id="fname" value="Test" /></div>
           <div class="field"><label>Last name</label><input type="text" id="lname" value="Buyer" /></div>
         </div>
         <div class="field">
-          <label>Email (use a new one per run, e.g. you+inv1@fastspring.com)</label>
+          <label>Email (new one each run)</label>
           <input type="email" id="email" placeholder="you+inv1@fastspring.com" />
         </div>
-        <div class="field">
-          <label>Product</label>
-          <select id="product"><option>Loading…</option></select>
-        </div>
-        <label class="it-check"><input type="checkbox" id="use-secure" checked /> Send as secure payload like IBM (unencrypted, test storefront only)</label>
-        <div class="field">
-          <label>Price override USD (secure payload only, blank = catalog price)</label>
-          <input type="text" id="price-override" placeholder="e.g. 923.45" />
-        </div>
-        <label class="it-check"><input type="checkbox" id="use-cart-tag" checked /> Option 1: tag the checkout with an IBM cart id (ibmCartId)</label>
-        <label class="it-check"><input type="checkbox" id="auto-lookup" checked /> Do IBM's GET /orders lookup on every callback that has an order id</label>
-        <label class="it-check"><input type="checkbox" id="show-data" /> Log data-data-callback (noisy)</label>
-        <button class="buy-btn" id="start-btn" style="width: auto; padding: 0.6rem 1.4rem">Load checkout</button>
-
-        <div id="fsc-embedded-checkout-container" class="rn-embedded"></div>
-        <div class="error-banner" id="error-banner"></div>
-
-        <h2 style="margin-top: 1.5rem">2. Re-check later</h2>
-        <p class="gym-sub">After paying the invoice or wire, look the order up again to see when IBM would fulfil.</p>
-        <div class="rn-actions">
-          <input type="text" id="recheck-id" placeholder="Order id" class="it-input" />
-          <button class="rn-btn buy-btn" id="recheck-btn" style="width: auto">Look up</button>
-        </div>
-        <div class="rn-actions" style="margin-top: 0.5rem">
-          <input type="text" id="session-id" placeholder="Session id (from fsc-url)" class="it-input" />
-          <button class="rn-btn buy-btn" id="session-btn" style="width: auto">Sessions v2</button>
-        </div>
-      </section>
-
-      <section class="gym-card">
-        <div class="it-timeline-head">
-          <h2>Timeline</h2>
-          <div class="rn-actions">
-            <span class="wh-dot" id="sse-dot" data-state="connecting"></span>
-            <button class="rn-btn" id="refresh-wh-btn">Refresh webhooks</button>
-            <button class="rn-btn" id="copy-btn">Copy as JSON</button>
-            <button class="rn-btn" id="clear-btn">Clear</button>
+        <div class="field-row">
+          <div class="field">
+            <label>Product</label>
+            <select id="product"><option>Loading…</option></select>
+          </div>
+          <div class="field">
+            <label>Price override USD (optional)</label>
+            <input type="text" id="price-override" placeholder="e.g. 923.45" />
           </div>
         </div>
-        <div class="it-summary" id="summary"></div>
-        <div id="timeline" class="it-timeline"><div class="wh-empty">Nothing yet. Load the checkout.</div></div>
+        <details class="it-advanced">
+          <summary>Advanced</summary>
+          <label class="it-check"><input type="checkbox" id="use-secure" checked /> Send as secure payload (untick to use builder.tag + add)</label>
+          <label class="it-check"><input type="checkbox" id="run-1a" checked /> Also run option 1a for comparison</label>
+        </details>
+        <button class="buy-btn" id="start-btn" style="width: auto; padding: 0.6rem 1.4rem">Load checkout</button>
+        <div class="it-payload" id="payload-box" hidden>
+          <div class="it-label">Secure payload sent</div>
+          <pre id="payload-pre"></pre>
+        </div>
+        <div id="fsc-embedded-checkout-container" class="rn-embedded"></div>
+        <div class="error-banner" id="error-banner"></div>
+      </section>
+
+      <section class="it-col">
+        <div class="gym-card">
+          <div class="it-card-head">
+            <h2>Option 1: IBM's backend by cart id</h2>
+            <span class="it-badge ok">documented only</span>
+          </div>
+          <p class="gym-sub">The front end polls IBM's backend (simulated here) with its cart id every 2s.
+            The backend answers from the webhooks it received.</p>
+          <ol class="it-steps" id="opt1-steps"></ol>
+          <div class="it-result" id="opt1-result"></div>
+        </div>
+
+        <div class="gym-card" id="opt1a-card">
+          <div class="it-card-head">
+            <h2>Option 1a: Sessions v2 workaround</h2>
+            <span class="it-badge warn">undocumented fields</span>
+          </div>
+          <ol class="it-steps" id="opt1a-steps"></ol>
+        </div>
+
+        <div class="gym-card">
+          <div class="it-card-head">
+            <h2>Webhooks for this purchase</h2>
+            <div class="rn-actions">
+              <span class="wh-dot" id="sse-dot" data-state="connecting"></span>
+              <button class="rn-btn" id="refresh-wh-btn">Refresh</button>
+            </div>
+          </div>
+          <table class="it-table">
+            <thead><tr><th>Time</th><th>Event</th><th>ibmCartId</th><th>IBM consumes today</th></tr></thead>
+            <tbody id="wh-rows"><tr><td colspan="4" class="it-muted">Load the checkout to start.</td></tr></tbody>
+          </table>
+          <p class="it-muted" id="wh-stats"></p>
+        </div>
       </section>
     </main>
+
+    <section class="it-raw">
+      <details>
+        <summary>Raw log (every callback, lookup and webhook payload)</summary>
+        <div class="rn-actions" style="margin: 0.5rem 0">
+          <button class="rn-btn" id="copy-btn">Copy as JSON</button>
+          <button class="rn-btn" id="clear-btn">Clear</button>
+        </div>
+        <div id="raw-log" class="it-timeline"></div>
+      </details>
+    </section>
 
     <script
       id="fsc-api"
@@ -98,7 +137,6 @@
       data-storefront="tariqh.test.onfastspring.com/embedded-ibm-ds"
       data-access-key="H7V9X7JIQVOMHJB4FXVQOQ"
       data-popup-webhook-received="ibmOrderReceived"
-      data-popup-closed="ibmPopupClosed"
       data-popup-event-received="ibmEventReceived"
       data-data-callback="ibmDataCallback"
       data-error-callback="ibmSblError"

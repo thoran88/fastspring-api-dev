@@ -1,4 +1,5 @@
 import express from "express";
+import { getRecentEvents } from "./webhooks.js";
 
 const router = express.Router();
 
@@ -83,6 +84,34 @@ router.get("/api/ibm-test/session/:storefront/:sessionId", async (req, res) => {
     console.error("IBM test session lookup error", err);
     res.status(502).json({ error: err.message });
   }
+});
+
+// Stand-in for IBM's backend in option 1. IBM's server would store the
+// webhooks it receives and answer its own front end by cart id. This looks
+// through the webhooks this server has received for tags.ibmCartId.
+router.get("/api/ibm-test/cart/:cartId", (req, res) => {
+  const cartId = req.params.cartId;
+  const matches = getRecentEvents()
+    .filter(({ event }) => event?.data?.tags?.ibmCartId === cartId)
+    .map(({ receivedAt, event }) => ({ receivedAt, type: event.type, data: event.data }));
+
+  const pending = matches.find((m) => m.type === "order.payment.pending");
+  const completed = matches.find((m) => m.type === "order.completed");
+  const src = completed || pending;
+  const d = src?.data || {};
+
+  res.json({
+    cartId,
+    status: completed ? "paid" : pending ? "invoice_pending" : "waiting",
+    orderId: d.id || null,
+    reference: d.reference || null,
+    subscription: (d.items || []).map((i) => i.subscription).filter(Boolean)[0] || null,
+    payUrl: pending?.data?.payUrl || null,
+    invoiceUrl: d.invoiceUrl || null,
+    paymentDueDate: pending?.data?.paymentDueDate || null,
+    total: d.totalDisplay || null,
+    events: matches.map((m) => ({ type: m.type, receivedAt: m.receivedAt })),
+  });
 });
 
 export default router;
