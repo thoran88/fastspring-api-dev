@@ -228,7 +228,7 @@ async function startCheckoutSession() {
   try {
     const res = await fetch("/api/session", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "X-FS-Store": "tariqh" },
       body: JSON.stringify({
         firstName: document.getElementById("fname").value,
         lastName: document.getElementById("lname").value,
