@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Plan Changes - Proration Tester</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>
+      (function () {
+        var stored = localStorage.getItem("nova-theme");
+        var theme =
+          stored ||
+          (window.matchMedia("(prefers-color-scheme: light)").matches
+            ? "light"
+            : "dark");
+        document.documentElement.dataset.theme = theme;
+      })();
+    </script>
+    <link rel="stylesheet" href="../shared/styles.css" />
+    <link rel="stylesheet" href="plan-change.css" />
+  </head>
+
+  <body>
+    <script type="module" src="../shared/admin-theme.js"></script>
+    <script type="module" src="../shared/webhook-log.js"></script>
+
+    <header>
+      <div class="logo">PLAN CHANGES<span>Proration Tester</span></div>
+      <div style="display: flex; align-items: center; gap: 0.8rem">
+        <a href="../index.html" class="admin-link">← All demos</a>
+        <div id="webhook-log-root"></div>
+        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme"></button>
+      </div>
+    </header>
+
+    <div class="hero">
+      <h1>Upgrade, then downgrade, in the same period</h1>
+      <p>
+        Plan changes through POST /subscriptions on tariqh, with prorate sent
+        explicitly every time. Every call snapshots the sub before and after,
+        so you can see when the API response and the sub disagree. Test
+        subscriptions only.
+      </p>
+    </div>
+
+    <main class="gym-layout">
+      <section class="gym-card">
+        <div class="admin-toolbar">
+          <h2>1. Test plans</h2>
+          <button id="plans-refresh" class="admin-refresh-btn">Refresh</button>
+        </div>
+        <p class="gym-sub">
+          Three monthly subscription products on tariqh. A is where every test
+          sub starts, B is the upgrade, C is cheaper than A and is the
+          downgrade that hits the refund check.
+        </p>
+        <div id="plans" class="pc-plans"></div>
+      </section>
+
+      <section class="gym-card">
+        <h2>2. Start a sub on Plan A</h2>
+        <p class="gym-sub">
+          Popup checkout on tariqh test mode, card 4242 4242 4242 4242. Use a
+          fresh sub for every scenario, the bug only shows on the first
+          downgrade after an upgrade.
+        </p>
+        <button class="buy-btn pc-btn" id="buy-btn">Buy Plan A</button>
+        <div class="error-banner" id="checkout-error"></div>
+        <div class="success-banner" id="checkout-success" style="display: none"></div>
+      </section>
+
+      <section class="gym-card">
+        <div class="admin-toolbar">
+          <h2>3. Subscription</h2>
+          <div class="pc-inline">
+            <input id="sub-id" type="text" placeholder="Subscription ID" spellcheck="false" />
+            <button id="sub-load" class="admin-refresh-btn">Load</button>
+          </div>
+        </div>
+        <div id="sub-snapshot" class="pc-snapshot">
+          <p class="empty-state">Buy a sub above or paste a subscription ID.</p>
+        </div>
+      </section>
+
+      <section class="gym-card">
+        <h2>4. Scenarios</h2>
+        <p class="gym-sub">
+          Run the upgrade first, then one downgrade. Each scenario needs its
+          own fresh sub.
+        </p>
+        <div class="pc-scenarios">
+          <button class="continue-btn pc-btn" data-from="A" data-target="B" data-prorate="true">
+            Upgrade A → B <small>prorate:true</small>
+          </button>
+          <button class="buy-btn pc-btn pc-danger" data-from="B" data-target="C" data-prorate="true">
+            Downgrade B → C <small>prorate:true · reproduces bug</small>
+          </button>
+          <button class="buy-btn pc-btn" data-from="B" data-target="C" data-prorate="false">
+            Downgrade B → C <small>prorate:false · workaround</small>
+          </button>
+          <button class="continue-btn pc-btn" data-from="B" data-target="A" data-prorate="true">
+            Downgrade B → A <small>prorate:true · control</small>
+          </button>
+        </div>
+        <label class="pc-check">
+          <input type="checkbox" id="estimate-first" checked />
+          Run POST /subscriptions/estimate with the same plan and prorate value
+          first, then send the change anyway
+        </label>
+
+        <details class="pc-custom">
+          <summary>Custom change</summary>
+          <div class="pc-inline">
+            <select id="custom-target"></select>
+            <select id="custom-prorate">
+              <option value="true">prorate:true</option>
+              <option value="false">prorate:false</option>
+            </select>
+            <button id="custom-estimate" class="admin-refresh-btn">Estimate only</button>
+            <button id="custom-change" class="admin-refresh-btn">Change plan</button>
+          </div>
+        </details>
+      </section>
+
+      <section class="gym-card">
+        <div class="admin-toolbar">
+          <h2>5. Results</h2>
+          <div class="pc-inline">
+            <button id="copy-results" class="admin-refresh-btn">Copy summary</button>
+            <button id="clear-results" class="admin-refresh-btn">Clear</button>
+          </div>
+        </div>
+        <div id="results">
+          <p class="empty-state">Nothing run yet.</p>
+        </div>
+      </section>
+    </main>
+
+    <script
+      id="fsc-api"
+      src="https://sbl.onfastspring.com/sbl/1.0.9/fastspring-builder.min.js"
+      type="text/javascript"
+      data-storefront="tariqh.test.onfastspring.com/popup-renew"
+      data-popup-closed="planPopupClosed"
+      data-popup-webhook-received="planOrderReceived"
+      data-error-callback="planSblError"
+    ></script>
+
+    <script type="module" src="plan-change.js"></script>
+  </body>
+</html>
