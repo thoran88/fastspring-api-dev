@@ -14,6 +14,7 @@ import ordersRouter from "./routes/orders.js";
 import renewRouter from "./routes/renew.js";
 import ibmTestRouter from "./routes/ibm-test.js";
 import planChangeRouter from "./routes/plan-change.js";
+import devToolsRouter from "./routes/dev-tools.js";
 import { storeMiddleware } from "./lib/fastspring.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -43,6 +44,7 @@ app.use(ordersRouter);
 app.use(renewRouter);
 app.use(ibmTestRouter);
 app.use(planChangeRouter);
+app.use(devToolsRouter);
 
 app.listen(PORT, () => {
   console.log(`Payment Components demo running at http://localhost:${PORT}`);
