@@ -45,25 +45,23 @@
 
     <div class="hero">
       <h1>Quotes & Invoices</h1>
-      <p>
-        Two separate FastSpring APIs. A quote already generates its own
-        invoice once the buyer opens and pays it - use the invoice tool
-        below only when you want to create a payable invoice directly,
-        with no quote involved.
-      </p>
     </div>
 
     <main class="gym-layout">
       <section class="gym-card" id="quote-card">
         <h2>Create a quote</h2>
         <p class="gym-sub">
-          Produces a shareable, payable quote page - the buyer can already
-          pay there directly if you just need that.
+          Produces a shareable, payable quote page - the buyer can already pay
+          there directly if you just need that.
         </p>
 
         <div class="field">
           <label>Quote name</label>
-          <input type="text" id="q-name" placeholder="Acme Corp - annual license" />
+          <input
+            type="text"
+            id="q-name"
+            placeholder="Acme Corp - annual license"
+          />
         </div>
 
         <h3 class="form-section-title">Customer</h3>
@@ -96,7 +94,11 @@
         <div class="field-row">
           <div class="field">
             <label>Product path</label>
-            <input type="text" id="q-product" placeholder="archicad-solo-1m-monthly" />
+            <input
+              type="text"
+              id="q-product"
+              placeholder="archicad-solo-1m-monthly"
+            />
           </div>
           <div class="field">
             <label>Quantity</label>
@@ -109,16 +111,22 @@
           <textarea id="q-notes" rows="2"></textarea>
         </div>
 
-        <button class="buy-btn" id="create-quote-btn" style="width: auto; padding: 0.6rem 1.4rem;">
+        <button
+          class="buy-btn"
+          id="create-quote-btn"
+          style="width: auto; padding: 0.6rem 1.4rem"
+        >
           Create quote
         </button>
         <div class="error-banner" id="quote-error"></div>
 
-        <div id="quote-result" style="display: none; margin-top: 1.2rem;">
+        <div id="quote-result" style="display: none; margin-top: 1.2rem">
           <div class="success-banner">
             <strong>Quote created.</strong>
             <p id="quote-result-summary"></p>
-            <a href="#" id="quote-url-link" target="_blank" rel="noopener">Open the quote →</a>
+            <a href="#" id="quote-url-link" target="_blank" rel="noopener"
+              >Open the quote →</a
+            >
           </div>
         </div>
       </section>
@@ -126,8 +134,8 @@
       <section class="gym-card" id="invoice-card">
         <h2>Create an invoice</h2>
         <p class="gym-sub">
-          Standalone Invoice API call - no quote involved. Produces a
-          payable invoice directly.
+          Standalone Invoice API call - no quote involved. Produces a payable
+          invoice directly.
         </p>
 
         <h3 class="form-section-title">Customer</h3>
@@ -160,7 +168,11 @@
         <div class="field-row">
           <div class="field">
             <label>Product path</label>
-            <input type="text" id="i-product" placeholder="archicad-solo-1m-monthly" />
+            <input
+              type="text"
+              id="i-product"
+              placeholder="archicad-solo-1m-monthly"
+            />
           </div>
           <div class="field">
             <label>Quantity</label>
@@ -196,19 +208,36 @@
           </div>
         </div>
 
-        <button class="buy-btn" id="create-invoice-btn" style="width: auto; padding: 0.6rem 1.4rem;">
+        <button
+          class="buy-btn"
+          id="create-invoice-btn"
+          style="width: auto; padding: 0.6rem 1.4rem"
+        >
           Create invoice
         </button>
         <div class="error-banner" id="invoice-error"></div>
 
-        <div id="invoice-result" style="display: none; margin-top: 1.2rem;">
+        <div id="invoice-result" style="display: none; margin-top: 1.2rem">
           <div class="success-banner">
             <strong>Invoice created.</strong>
             <p id="invoice-result-summary"></p>
-            <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.4rem;">
-              <a href="#" id="invoice-pay-link" target="_blank" rel="noopener">Pay now →</a>
-              <a href="#" id="invoice-web-link" target="_blank" rel="noopener">View invoice →</a>
-              <a href="#" id="invoice-pdf-link" target="_blank" rel="noopener">Download PDF →</a>
+            <div
+              style="
+                display: flex;
+                gap: 1rem;
+                flex-wrap: wrap;
+                margin-top: 0.4rem;
+              "
+            >
+              <a href="#" id="invoice-pay-link" target="_blank" rel="noopener"
+                >Pay now →</a
+              >
+              <a href="#" id="invoice-web-link" target="_blank" rel="noopener"
+                >View invoice →</a
+              >
+              <a href="#" id="invoice-pdf-link" target="_blank" rel="noopener"
+                >Download PDF →</a
+              >
             </div>
           </div>
         </div>
@@ -216,6 +245,6 @@
     </main>
 
     <script type="module" src="quotes.js"></script>
-      <script src="../shared/dev-tools.js" defer></script>
+    <script src="../shared/dev-tools.js" defer></script>
   </body>
 </html>

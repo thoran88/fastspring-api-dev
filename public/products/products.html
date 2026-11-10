@@ -42,16 +42,6 @@
       </div>
     </header>
 
-    <div class="hero">
-      <h1>Manage your product catalog</h1>
-      <p>
-        Create, view, update, and delete products directly against
-        FastSpring's Products API. Subscription products are created here
-        with standard fixed pricing - turning one into a Managed Subscription
-        is still a manual step in the dashboard.
-      </p>
-    </div>
-
     <main class="gym-layout">
       <section class="gym-card">
         <div class="admin-toolbar">
@@ -92,7 +82,13 @@
             <div class="field-row">
               <div class="field">
                 <label>Price (USD)</label>
-                <input type="number" id="f-price" min="0" step="0.01" required />
+                <input
+                  type="number"
+                  id="f-price"
+                  min="0"
+                  step="0.01"
+                  required
+                />
               </div>
               <div class="field subscription-only">
                 <label>Billing interval</label>
@@ -104,7 +100,13 @@
               </div>
               <div class="field subscription-only">
                 <label>Interval length</label>
-                <input type="number" id="f-interval-length" min="1" step="1" value="1" />
+                <input
+                  type="number"
+                  id="f-interval-length"
+                  min="1"
+                  step="1"
+                  value="1"
+                />
               </div>
             </div>
 
@@ -137,7 +139,9 @@
                     <option value="">(default: digital)</option>
                     <option value="digital">Digital</option>
                     <option value="physical">Physical</option>
-                    <option value="digital-and-physical">Digital and physical</option>
+                    <option value="digital-and-physical">
+                      Digital and physical
+                    </option>
                     <option value="saas">SaaS</option>
                   </select>
                 </div>
@@ -154,25 +158,35 @@
                       <option value="SW054002">Cloud Services - SaaS</option>
                     </optgroup>
                     <optgroup label="Gaming">
-                      <option value="DG010301">Gaming - Streaming Access</option>
+                      <option value="DG010301">
+                        Gaming - Streaming Access
+                      </option>
                     </optgroup>
                     <optgroup label="Information & Data">
-                      <option value="SI010002">Canned Information Services - Delivered Electronically</option>
+                      <option value="SI010002">
+                        Canned Information Services - Delivered Electronically
+                      </option>
                     </optgroup>
                     <optgroup label="Technical Software Services">
-                      <option value="SC130101">Tech services - remote support only</option>
-                      <option value="SC130102">Tech services - downloaded updates + support</option>
+                      <option value="SC130101">
+                        Tech services - remote support only
+                      </option>
+                      <option value="SC130102">
+                        Tech services - downloaded updates + support
+                      </option>
                     </optgroup>
                     <optgroup label="Digital Goods">
                       <option value="DA059399">Digital audio (music)</option>
-                      <option value="DV021008">Digital audio-visual works (video)</option>
+                      <option value="DV021008">
+                        Digital audio-visual works (video)
+                      </option>
                       <option value="DP010200">Photographs</option>
                       <option value="DB031013">Digital books</option>
                     </optgroup>
                   </select>
                   <p class="field-hint">
-                    Leave as default to let FastSpring apply the standard code for
-                    the format above.
+                    Leave as default to let FastSpring apply the standard code
+                    for the format above.
                   </p>
                 </div>
               </div>
@@ -216,7 +230,12 @@
                   </div>
                   <div class="field">
                     <label>Trial price (USD)</label>
-                    <input type="number" id="f-trial-price" min="0" step="0.01" />
+                    <input
+                      type="number"
+                      id="f-trial-price"
+                      min="0"
+                      step="0.01"
+                    />
                   </div>
                   <div class="field checkbox-field">
                     <label>
@@ -243,7 +262,9 @@
                   </div>
                 </div>
                 <div class="field">
-                  <label>Quantity discounts (JSON object: quantity → % off)</label>
+                  <label
+                    >Quantity discounts (JSON object: quantity → % off)</label
+                  >
                   <textarea
                     id="f-qty-discounts"
                     rows="2"
@@ -259,7 +280,12 @@
                   </div>
                   <div class="field">
                     <label>Discount duration (billing cycles)</label>
-                    <input type="number" id="f-discount-duration" min="0" step="1" />
+                    <input
+                      type="number"
+                      id="f-discount-duration"
+                      min="0"
+                      step="1"
+                    />
                   </div>
                 </div>
 
@@ -284,7 +310,12 @@
                   </div>
                   <div class="field">
                     <label>Interval length (before charge)</label>
-                    <input type="number" id="f-reminder-length" min="1" step="1" />
+                    <input
+                      type="number"
+                      id="f-reminder-length"
+                      min="1"
+                      step="1"
+                    />
                   </div>
                 </div>
 
@@ -309,11 +340,18 @@
                   </div>
                   <div class="field">
                     <label>Interval length (after failure)</label>
-                    <input type="number" id="f-overdue-length" min="1" step="1" />
+                    <input
+                      type="number"
+                      id="f-overdue-length"
+                      min="1"
+                      step="1"
+                    />
                   </div>
                 </div>
 
-                <h3 class="form-section-title">Cancellation / deactivation window</h3>
+                <h3 class="form-section-title">
+                  Cancellation / deactivation window
+                </h3>
                 <p class="field-hint">
                   Grace period before an overdue subscription auto-deactivates.
                 </p>
@@ -329,13 +367,23 @@
                   </div>
                   <div class="field">
                     <label>Interval length</label>
-                    <input type="number" id="f-cancellation-length" min="1" step="1" />
+                    <input
+                      type="number"
+                      id="f-cancellation-length"
+                      min="1"
+                      step="1"
+                    />
                   </div>
                 </div>
               </div>
             </details>
 
-            <button type="submit" class="continue-btn" id="product-form-submit" style="margin-top: 1rem;">
+            <button
+              type="submit"
+              class="continue-btn"
+              id="product-form-submit"
+              style="margin-top: 1rem"
+            >
               Save product
             </button>
           </form>
@@ -344,6 +392,6 @@
     </div>
 
     <script type="module" src="products.js"></script>
-      <script src="../shared/dev-tools.js" defer></script>
+    <script src="../shared/dev-tools.js" defer></script>
   </body>
 </html>

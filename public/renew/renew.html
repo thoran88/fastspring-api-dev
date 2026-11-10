@@ -26,25 +26,20 @@
         <a href="../index.html" class="admin-link">← All demos</a>
         <a href="renew-embedded.html" class="admin-link">Try embedded →</a>
         <a href="renew-admin.html" class="admin-link">Staff admin →</a>
-        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme"></button>
+        <button
+          id="theme-toggle"
+          class="theme-toggle"
+          aria-label="Toggle theme"
+        ></button>
       </div>
     </header>
-
-    <div class="hero">
-      <h1>Sign up once. Get billed when the seller renews.</h1>
-      <p>
-        Managed subscription on tariqh (tariqh.test.onfastspring.com/popup-renew). Pay with a card and
-        renewals charge it. Pay with wire or another invoice method and each
-        renewal sends you an invoice instead.
-      </p>
-    </div>
 
     <main class="gym-layout">
       <section class="gym-card">
         <h2>1. Start your subscription (popup checkout)</h2>
         <p class="gym-sub">
-          Test mode. Card 4242 4242 4242 4242 saves the card (Track A).
-          Wire transfer saves nothing (Track B).
+          Test mode. Card 4242 4242 4242 4242 saves the card (Track A). Wire
+          transfer saves nothing (Track B).
         </p>
 
         <div class="field-row">
@@ -63,10 +58,16 @@
         </div>
         <div class="field">
           <label>Plan</label>
-          <select id="product"><option>Loading…</option></select>
+          <select id="product">
+            <option>Loading…</option>
+          </select>
         </div>
 
-        <button class="buy-btn" id="start-btn" style="width: auto; padding: 0.6rem 1.4rem">
+        <button
+          class="buy-btn"
+          id="start-btn"
+          style="width: auto; padding: 0.6rem 1.4rem"
+        >
           Continue to checkout
         </button>
 
@@ -90,6 +91,6 @@
 
     <script type="module" src="../shared/admin-theme.js"></script>
     <script type="module" src="renew-signup.js"></script>
-      <script src="../shared/dev-tools.js" defer></script>
+    <script src="../shared/dev-tools.js" defer></script>
   </body>
 </html>

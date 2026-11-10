@@ -71,15 +71,6 @@
       ></button>
     </header>
 
-    <div class="hero">
-      <h1>Pick a demo</h1>
-      <p>
-        Three integrations, three checkout approaches - Checkout Components
-        and Store Builder Library (popup + embedded), all against real
-        FastSpring products.
-      </p>
-    </div>
-
     <main class="demo-grid">
       <div class="demo-card">
         <h2>NOVA Game Store</h2>
@@ -113,11 +104,13 @@
       <div class="demo-card">
         <h2>IBM-sub</h2>
         <p>
-          Usage-based Managed Subscription via SBL (embedded-IBM) - $0
-          signup, admin-simulated random-amount monthly rebill.
+          Usage-based Managed Subscription via SBL (embedded-IBM) - $0 signup,
+          admin-simulated random-amount monthly rebill.
         </p>
         <a href="ibm/ibm.html">Add payment method →</a>
-        <a href="ibm/ibm-components.html">Add payment method (Checkout Components) →</a>
+        <a href="ibm/ibm-components.html"
+          >Add payment method (Checkout Components) →</a
+        >
         <a href="ibm/ibm-account.html">Account summary →</a>
         <a href="ibm/ibm-admin.html">Staff admin →</a>
       </div>
@@ -135,20 +128,11 @@
       </div>
 
       <div class="demo-card">
-        <h2>IBM Invoice at Checkout Test</h2>
-        <p>
-          IBM DS embedded checkout on tariqh (embedded-ibm-ds). Logs every SBL
-          callback, IBM's GET /orders lookup and every webhook, flagging what IBM misses.
-        </p>
-        <a href="ibm-invoice-test/index.html">Open test →</a>
-      </div>
-
-      <div class="demo-card">
         <h2>Renewal Walkthrough</h2>
         <p>
           Seller demo of managed subscription renewals, stage by stage, with
-          your side and your customer's side next to each other. Live on
-          tariqh test mode.
+          your side and your customer's side next to each other. Live on tariqh
+          test mode.
         </p>
         <a href="renewal-walkthrough/index.html">Open walkthrough →</a>
       </div>
@@ -175,14 +159,14 @@
       <div class="demo-card">
         <h2>Quotes & Invoices</h2>
         <p>
-          B2B flow - create a shareable quote, then generate a separate
-          payable invoice via FastSpring's Invoice API.
+          B2B flow - create a shareable quote, then generate a separate payable
+          invoice via FastSpring's Invoice API.
         </p>
         <a href="quotes/quotes.html">Open B2B admin →</a>
       </div>
     </main>
 
     <script type="module" src="shared/admin-theme.js"></script>
-      <script src="shared/dev-tools.js" defer></script>
+    <script src="shared/dev-tools.js" defer></script>
   </body>
 </html>

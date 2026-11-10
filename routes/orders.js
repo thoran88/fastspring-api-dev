@@ -1,5 +1,5 @@
 import express from "express";
-import { FASTSPRING_API_BASE, authHeader, chunk } from "../lib/fastspring.js";
+import { chunk } from "../lib/fastspring.js";
 
 const router = express.Router();
 
@@ -29,8 +29,8 @@ router.get("/api/orders", async (req, res) => {
 
   try {
     const response = await fetch(
-      `${FASTSPRING_API_BASE}/orders?${params.toString()}`,
-      { headers: { Authorization: authHeader } },
+      `${req.fs.apiBase}/orders?${params.toString()}`,
+      { headers: { Authorization: req.fs.auth } },
     );
     const data = await response.json();
     if (!response.ok) {
@@ -58,8 +58,8 @@ router.get("/api/refunds", async (req, res) => {
     let total = Infinity;
     while (allOrders.length < total) {
       const response = await fetch(
-        `${FASTSPRING_API_BASE}/orders?returns=true&status=completed&page=${page}&limit=50`,
-        { headers: { Authorization: authHeader } },
+        `${req.fs.apiBase}/orders?returns=true&status=completed&page=${page}&limit=50`,
+        { headers: { Authorization: req.fs.auth } },
       );
       const data = await response.json();
       if (!response.ok) {
@@ -84,8 +84,8 @@ router.get("/api/refunds", async (req, res) => {
     const returnDetails = [];
     for (const batch of chunk(returnIds, 50)) {
       const detailResponse = await fetch(
-        `${FASTSPRING_API_BASE}/returns/${batch.join(",")}`,
-        { headers: { Authorization: authHeader } },
+        `${req.fs.apiBase}/returns/${batch.join(",")}`,
+        { headers: { Authorization: req.fs.auth } },
       );
       const detailData = await detailResponse.json();
       if (!detailResponse.ok) {
@@ -124,8 +124,8 @@ router.get("/api/refunds", async (req, res) => {
 router.get("/api/orders/:id", async (req, res) => {
   try {
     const response = await fetch(
-      `${FASTSPRING_API_BASE}/orders/${req.params.id}`,
-      { headers: { Authorization: authHeader } },
+      `${req.fs.apiBase}/orders/${req.params.id}`,
+      { headers: { Authorization: req.fs.auth } },
     );
     const data = await response.json();
     const order = data.orders?.[0];
@@ -152,11 +152,11 @@ router.post("/api/refunds", async (req, res) => {
   }
 
   try {
-    const response = await fetch(`${FASTSPRING_API_BASE}/returns`, {
+    const response = await fetch(`${req.fs.apiBase}/returns`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: authHeader,
+        Authorization: req.fs.auth,
       },
       body: JSON.stringify({ returns }),
     });

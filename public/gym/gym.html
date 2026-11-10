@@ -32,23 +32,18 @@
 
     <header>
       <div class="logo">FLEXFIT<span>Pay-As-You-Go Billing</span></div>
-      <div style="display: flex; align-items: center; gap: 0.8rem;">
+      <div style="display: flex; align-items: center; gap: 0.8rem">
         <a href="../index.html" class="admin-link">← All demos</a>
         <a href="gym-account.html" class="admin-link">My account →</a>
         <a href="gym-admin.html" class="admin-link">Staff admin →</a>
         <div id="webhook-log-root"></div>
-        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme"></button>
+        <button
+          id="theme-toggle"
+          class="theme-toggle"
+          aria-label="Toggle theme"
+        ></button>
       </div>
     </header>
-
-    <div class="hero">
-      <h1>Authorize billing once. Pay only for classes you actually take.</h1>
-      <p>
-        This is a Managed Subscription - there's no fixed price or interval.
-        Authorizing below doesn't charge you anything; FlexFit charges your
-        card afterward for whatever you actually used that cycle.
-      </p>
-    </div>
 
     <main class="gym-layout">
       <section class="gym-card">
@@ -74,11 +69,19 @@
             <input type="email" id="email" placeholder="you@example.com" />
           </div>
 
-          <button class="buy-btn" id="continue-btn" style="width: auto; padding: 0.6rem 1.4rem;">
+          <button
+            class="buy-btn"
+            id="continue-btn"
+            style="width: auto; padding: 0.6rem 1.4rem"
+          >
             Continue to payment
           </button>
 
-          <div class="components-wrap is-loading" id="components-wrap" style="display: none; margin-top: 1.2rem;">
+          <div
+            class="components-wrap is-loading"
+            id="components-wrap"
+            style="display: none; margin-top: 1.2rem"
+          >
             <div class="component-skeleton">
               <div class="skeleton-line"></div>
               <div class="skeleton-line"></div>
@@ -93,7 +96,11 @@
           <div class="error-banner" id="error-banner"></div>
         </div>
 
-        <div class="success-banner" id="authorize-success" style="display: none">
+        <div
+          class="success-banner"
+          id="authorize-success"
+          style="display: none"
+        >
           <strong>Billing authorized.</strong>
           <p id="authorize-success-detail"></p>
         </div>
@@ -101,6 +108,6 @@
     </main>
 
     <script type="module" src="gym.js"></script>
-      <script src="../shared/dev-tools.js" defer></script>
+    <script src="../shared/dev-tools.js" defer></script>
   </body>
 </html>

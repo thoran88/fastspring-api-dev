@@ -9,7 +9,9 @@
         var stored = localStorage.getItem("nova-theme");
         var theme =
           stored ||
-          (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+          (window.matchMedia("(prefers-color-scheme: light)").matches
+            ? "light"
+            : "dark");
         document.documentElement.dataset.theme = theme;
       })();
     </script>
@@ -19,22 +21,19 @@
 
   <body>
     <header>
-      <div class="logo">RENEWALS<span>Managed subscription walkthrough</span></div>
+      <div class="logo">
+        RENEWALS<span>Managed subscription walkthrough</span>
+      </div>
       <div style="display: flex; align-items: center; gap: 0.8rem">
         <a href="../index.html" class="admin-link">← All demos</a>
         <button id="restart" class="admin-refresh-btn">Start over</button>
-        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme"></button>
+        <button
+          id="theme-toggle"
+          class="theme-toggle"
+          aria-label="Toggle theme"
+        ></button>
       </div>
     </header>
-
-    <div class="hero">
-      <h1>How renewals work, start to finish</h1>
-      <p>
-        One subscription, followed through every stage. On the left is what your
-        system does. On the right is what your customer sees. Everything here
-        runs for real in test mode.
-      </p>
-    </div>
 
     <nav class="wt-steps" id="steps"></nav>
 
@@ -45,13 +44,19 @@
           <span class="wt-num">1</span>
           <div>
             <h2>Your customer signs up</h2>
-            <p>Every payment method for their country is offered. What they pick decides how renewals work.</p>
+            <p>
+              Every payment method for their country is offered. What they pick
+              decides how renewals work.
+            </p>
           </div>
         </div>
         <div class="wt-cols">
           <div class="wt-col seller">
             <div class="wt-col-label">Your system</div>
-            <p>You put a managed subscription product in checkout. Nothing else changes in your integration.</p>
+            <p>
+              You put a managed subscription product in checkout. Nothing else
+              changes in your integration.
+            </p>
             <div class="wt-field">
               <label>Plan</label>
               <select id="product"></select>
@@ -59,7 +64,10 @@
             <div class="wt-field">
               <label>Customer email</label>
               <input id="email" type="email" />
-              <small>A new email each time gives a brand new customer account.</small>
+              <small
+                >A new email each time gives a brand new customer
+                account.</small
+              >
             </div>
             <div class="wt-paths">
               <div class="wt-path a">
@@ -68,19 +76,31 @@
               </div>
               <div class="wt-path b">
                 <strong>Pays by invoice or wire</strong>
-                <span>Nothing is saved. Each renewal sends them an invoice to pay.</span>
+                <span
+                  >Nothing is saved. Each renewal sends them an invoice to
+                  pay.</span
+                >
               </div>
             </div>
             <div class="wt-event" id="signup-event" hidden></div>
           </div>
           <div class="wt-col buyer">
             <div class="wt-col-label">Your customer</div>
-            <button class="buy-btn wt-btn" id="start-checkout">Open checkout</button>
-            <p class="wt-hint">Test card: 4242 4242 4242 4242, any future date, any CVC.</p>
+            <button class="buy-btn wt-btn" id="start-checkout">
+              Open checkout
+            </button>
+            <p class="wt-hint">
+              Test card: 4242 4242 4242 4242, any future date, any CVC.
+            </p>
             <div id="fsc-embedded-checkout-container"></div>
             <div class="wt-find" id="find-wrap" hidden>
-              <p class="wt-hint">Finished checkout but nothing showed up? Invoice and wire orders can take a moment.</p>
-              <button class="admin-refresh-btn" id="find-sub">Find their subscription</button>
+              <p class="wt-hint">
+                Finished checkout but nothing showed up? Invoice and wire orders
+                can take a moment.
+              </p>
+              <button class="admin-refresh-btn" id="find-sub">
+                Find their subscription
+              </button>
             </div>
           </div>
         </div>
@@ -92,20 +112,30 @@
           <span class="wt-num">2</span>
           <div>
             <h2>The subscription is live</h2>
-            <p>The customer has access straight away. You store the subscription ID against them.</p>
+            <p>
+              The customer has access straight away. You store the subscription
+              ID against them.
+            </p>
           </div>
         </div>
         <div class="wt-cols">
           <div class="wt-col seller">
             <div class="wt-col-label">Your system</div>
             <div class="wt-kv" id="sub-details"></div>
-            <p class="wt-hint">You get this from the <code>order.completed</code> and <code>subscription.activated</code> webhooks.</p>
+            <p class="wt-hint">
+              You get this from the <code>order.completed</code> and
+              <code>subscription.activated</code> webhooks.
+            </p>
           </div>
           <div class="wt-col buyer">
             <div class="wt-col-label">Your customer</div>
             <div class="wt-kv" id="buyer-signup"></div>
-            <button class="admin-refresh-btn" id="open-portal">Open their account page</button>
-            <p class="wt-hint">Where they see their subscription, payment methods and invoices.</p>
+            <button class="admin-refresh-btn" id="open-portal">
+              Open their account page
+            </button>
+            <p class="wt-hint">
+              Where they see their subscription, payment methods and invoices.
+            </p>
           </div>
         </div>
       </section>
@@ -116,7 +146,10 @@
           <span class="wt-num">3</span>
           <div>
             <h2>You renew the subscription</h2>
-            <p>One API call, whatever the payment method. FastSpring works out whether to charge or invoice.</p>
+            <p>
+              One API call, whatever the payment method. FastSpring works out
+              whether to charge or invoice.
+            </p>
           </div>
         </div>
         <div class="wt-cols">
@@ -125,16 +158,29 @@
             <div class="wt-field-row">
               <div class="wt-field">
                 <label>Amount for this period</label>
-                <input id="renew-price" type="number" min="0" step="0.01" placeholder="current price" />
+                <input
+                  id="renew-price"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="current price"
+                />
               </div>
               <div class="wt-field">
                 <label>Days to pay (invoices only)</label>
-                <input id="renew-net" type="number" min="0" placeholder="store default" />
+                <input
+                  id="renew-net"
+                  type="number"
+                  min="0"
+                  placeholder="store default"
+                />
               </div>
             </div>
             <button class="buy-btn wt-btn" id="renew-btn">Renew</button>
             <div class="wt-code-label">Request</div>
-            <pre class="wt-code" id="renew-request">POST /subscriptions/renew</pre>
+            <pre class="wt-code" id="renew-request">
+POST /subscriptions/renew</pre
+            >
             <div class="wt-code-label">What came back</div>
             <ol class="wt-timeline" id="renew-timeline"></ol>
           </div>
@@ -174,7 +220,9 @@
           <span class="wt-num">5</span>
           <div>
             <h2>The next renewal</h2>
-            <p>Run it again to see how the subscription behaves from here on.</p>
+            <p>
+              Run it again to see how the subscription behaves from here on.
+            </p>
           </div>
         </div>
         <div class="wt-cols">
@@ -202,6 +250,6 @@
     ></script>
     <script type="module" src="../shared/admin-theme.js"></script>
     <script type="module" src="walkthrough.js"></script>
-      <script src="../shared/dev-tools.js" defer></script>
+    <script src="../shared/dev-tools.js" defer></script>
   </body>
 </html>

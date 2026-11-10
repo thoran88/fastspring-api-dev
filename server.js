@@ -30,8 +30,8 @@ app.use(webhooksRouter);
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-// Every /api route gets req.fs (which store to call). Defaults to thoran,
-// IBM pages send X-FS-Store: tariqh.
+// Every /api route gets req.fs (which store to call). Defaults to tariqh;
+// pass X-FS-Store: thoran (or ?store=thoran) to use the QA2 store instead.
 app.use("/api", storeMiddleware);
 
 app.use(sessionRouter);

@@ -1,5 +1,5 @@
 import express from "express";
-import { FASTSPRING_API_BASE, authHeader, chunk } from "../lib/fastspring.js";
+import { chunk } from "../lib/fastspring.js";
 
 const router = express.Router();
 
@@ -11,8 +11,8 @@ const CATALOG_SKU = "GAME";
 // account, then keep only the ones tagged sku === "GAME" in the dashboard.
 router.get("/api/products", async (req, res) => {
   try {
-    const listResponse = await fetch(`${FASTSPRING_API_BASE}/products`, {
-      headers: { Authorization: authHeader },
+    const listResponse = await fetch(`${req.fs.apiBase}/products`, {
+      headers: { Authorization: req.fs.auth },
     });
     const listData = await listResponse.json();
     if (!listResponse.ok) {
@@ -30,8 +30,8 @@ router.get("/api/products", async (req, res) => {
     const rawProducts = [];
     for (const batch of chunk(allPaths, 50)) {
       const detailResponse = await fetch(
-        `${FASTSPRING_API_BASE}/products/${batch.join(",")}`,
-        { headers: { Authorization: authHeader } },
+        `${req.fs.apiBase}/products/${batch.join(",")}`,
+        { headers: { Authorization: req.fs.auth } },
       );
       const detailData = await detailResponse.json();
       if (!detailResponse.ok) {
@@ -69,8 +69,8 @@ router.get("/api/products", async (req, res) => {
 // create, list, view, update, and delete any product on the account.
 router.get("/api/admin/products", async (req, res) => {
   try {
-    const listResponse = await fetch(`${FASTSPRING_API_BASE}/products`, {
-      headers: { Authorization: authHeader },
+    const listResponse = await fetch(`${req.fs.apiBase}/products`, {
+      headers: { Authorization: req.fs.auth },
     });
     const listData = await listResponse.json();
     if (!listResponse.ok) {
@@ -88,8 +88,8 @@ router.get("/api/admin/products", async (req, res) => {
     const products = [];
     for (const batch of chunk(allPaths, 50)) {
       const detailResponse = await fetch(
-        `${FASTSPRING_API_BASE}/products/${batch.join(",")}`,
-        { headers: { Authorization: authHeader } },
+        `${req.fs.apiBase}/products/${batch.join(",")}`,
+        { headers: { Authorization: req.fs.auth } },
       );
       const detailData = await detailResponse.json();
       if (!detailResponse.ok) {
@@ -112,8 +112,8 @@ router.get("/api/admin/products", async (req, res) => {
 router.get("/api/admin/products/:path", async (req, res) => {
   try {
     const response = await fetch(
-      `${FASTSPRING_API_BASE}/products/${req.params.path}`,
-      { headers: { Authorization: authHeader } },
+      `${req.fs.apiBase}/products/${req.params.path}`,
+      { headers: { Authorization: req.fs.auth } },
     );
     const data = await response.json();
     if (!response.ok) {
@@ -140,11 +140,11 @@ router.post("/api/admin/products", async (req, res) => {
   }
 
   try {
-    const response = await fetch(`${FASTSPRING_API_BASE}/products`, {
+    const response = await fetch(`${req.fs.apiBase}/products`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: authHeader,
+        Authorization: req.fs.auth,
       },
       body: JSON.stringify({ products: [product] }),
     });
@@ -167,8 +167,8 @@ router.post("/api/admin/products", async (req, res) => {
 router.delete("/api/admin/products/:path", async (req, res) => {
   try {
     const response = await fetch(
-      `${FASTSPRING_API_BASE}/products/${req.params.path}`,
-      { method: "DELETE", headers: { Authorization: authHeader } },
+      `${req.fs.apiBase}/products/${req.params.path}`,
+      { method: "DELETE", headers: { Authorization: req.fs.auth } },
     );
     const data = await response.json();
     const result = data.products?.[0];

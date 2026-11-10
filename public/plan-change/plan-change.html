@@ -28,19 +28,13 @@
       <div style="display: flex; align-items: center; gap: 0.8rem">
         <a href="../index.html" class="admin-link">← All demos</a>
         <div id="webhook-log-root"></div>
-        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme"></button>
+        <button
+          id="theme-toggle"
+          class="theme-toggle"
+          aria-label="Toggle theme"
+        ></button>
       </div>
     </header>
-
-    <div class="hero">
-      <h1>Upgrade, then downgrade, in the same period</h1>
-      <p>
-        Plan changes through POST /subscriptions on tariqh, with prorate sent
-        explicitly every time. Every call snapshots the sub before and after,
-        so you can see when the API response and the sub disagree. Test
-        subscriptions only.
-      </p>
-    </div>
 
     <main class="gym-layout">
       <section class="gym-card">
@@ -50,8 +44,8 @@
         </div>
         <p class="gym-sub">
           Three monthly subscription products on tariqh. A is where every test
-          sub starts, B is the upgrade, C is cheaper than A and is the
-          downgrade that hits the refund check.
+          sub starts, B is the upgrade, C is cheaper than A and is the downgrade
+          that hits the refund check.
         </p>
         <div id="plans" class="pc-plans"></div>
       </section>
@@ -65,14 +59,23 @@
         </p>
         <button class="buy-btn pc-btn" id="buy-btn">Buy Plan A</button>
         <div class="error-banner" id="checkout-error"></div>
-        <div class="success-banner" id="checkout-success" style="display: none"></div>
+        <div
+          class="success-banner"
+          id="checkout-success"
+          style="display: none"
+        ></div>
       </section>
 
       <section class="gym-card">
         <div class="admin-toolbar">
           <h2>3. Subscription</h2>
           <div class="pc-inline">
-            <input id="sub-id" type="text" placeholder="Subscription ID" spellcheck="false" />
+            <input
+              id="sub-id"
+              type="text"
+              placeholder="Subscription ID"
+              spellcheck="false"
+            />
             <button id="sub-load" class="admin-refresh-btn">Load</button>
           </div>
         </div>
@@ -84,20 +87,40 @@
       <section class="gym-card">
         <h2>4. Scenarios</h2>
         <p class="gym-sub">
-          Run the upgrade first, then one downgrade. Each scenario needs its
-          own fresh sub.
+          Run the upgrade first, then one downgrade. Each scenario needs its own
+          fresh sub.
         </p>
         <div class="pc-scenarios">
-          <button class="continue-btn pc-btn" data-from="A" data-target="B" data-prorate="true">
+          <button
+            class="continue-btn pc-btn"
+            data-from="A"
+            data-target="B"
+            data-prorate="true"
+          >
             Upgrade A → B <small>prorate:true</small>
           </button>
-          <button class="buy-btn pc-btn pc-danger" data-from="B" data-target="C" data-prorate="true">
+          <button
+            class="buy-btn pc-btn pc-danger"
+            data-from="B"
+            data-target="C"
+            data-prorate="true"
+          >
             Downgrade B → C <small>prorate:true · reproduces bug</small>
           </button>
-          <button class="buy-btn pc-btn" data-from="B" data-target="C" data-prorate="false">
+          <button
+            class="buy-btn pc-btn"
+            data-from="B"
+            data-target="C"
+            data-prorate="false"
+          >
             Downgrade B → C <small>prorate:false · workaround</small>
           </button>
-          <button class="continue-btn pc-btn" data-from="B" data-target="A" data-prorate="true">
+          <button
+            class="continue-btn pc-btn"
+            data-from="B"
+            data-target="A"
+            data-prorate="true"
+          >
             Downgrade B → A <small>prorate:true · control</small>
           </button>
         </div>
@@ -115,8 +138,12 @@
               <option value="true">prorate:true</option>
               <option value="false">prorate:false</option>
             </select>
-            <button id="custom-estimate" class="admin-refresh-btn">Estimate only</button>
-            <button id="custom-change" class="admin-refresh-btn">Change plan</button>
+            <button id="custom-estimate" class="admin-refresh-btn">
+              Estimate only
+            </button>
+            <button id="custom-change" class="admin-refresh-btn">
+              Change plan
+            </button>
           </div>
         </details>
       </section>
@@ -125,7 +152,9 @@
         <div class="admin-toolbar">
           <h2>5. Results</h2>
           <div class="pc-inline">
-            <button id="copy-results" class="admin-refresh-btn">Copy summary</button>
+            <button id="copy-results" class="admin-refresh-btn">
+              Copy summary
+            </button>
             <button id="clear-results" class="admin-refresh-btn">Clear</button>
           </div>
         </div>
@@ -146,6 +175,6 @@
     ></script>
 
     <script type="module" src="plan-change.js"></script>
-      <script src="../shared/dev-tools.js" defer></script>
+    <script src="../shared/dev-tools.js" defer></script>
   </body>
 </html>

@@ -27,24 +27,18 @@
 
     <header>
       <div class="logo">IBM-SUB<span>Staff Admin</span></div>
-      <div style="display: flex; align-items: center; gap: 0.8rem;">
+      <div style="display: flex; align-items: center; gap: 0.8rem">
         <a href="../index.html" class="admin-link">← All demos</a>
         <a href="ibm.html" class="admin-link">← Add payment method</a>
         <a href="ibm-account.html" class="admin-link">Account summary →</a>
         <div id="webhook-log-root"></div>
-        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme"></button>
+        <button
+          id="theme-toggle"
+          class="theme-toggle"
+          aria-label="Toggle theme"
+        ></button>
       </div>
     </header>
-
-    <div class="hero">
-      <h1>Manage IBM-sub subscribers</h1>
-      <p>
-        Usage-based Managed Subscription - real usage isn't tracked in this
-        demo, so charges (manual or via the batch job below) are always a
-        deliberate amount you or the simulator picks, against FastSpring's
-        Managed Subscription API.
-      </p>
-    </div>
 
     <main class="gym-layout">
       <section class="gym-card">
@@ -52,16 +46,16 @@
           <h2>Monthly rebill</h2>
         </div>
         <p class="gym-sub">
-          IBM-sub charges on the 1st of every month for the prior month's
-          usage. Since there's no real usage metering here, each run charges
-          every active subscriber a random amount - mostly small, with a
-          deliberate slice of high amounts so that edge case gets exercised
-          too, not just the common case.
+          IBM-sub charges on the 1st of every month for the prior month's usage.
+          Since there's no real usage metering here, each run charges every
+          active subscriber a random amount - mostly small, with a deliberate
+          slice of high amounts so that edge case gets exercised too, not just
+          the common case.
         </p>
         <button
           id="bulk-rebill-btn"
           class="buy-btn"
-          style="width: auto; padding: 0.6rem 1.4rem;"
+          style="width: auto; padding: 0.6rem 1.4rem"
         >
           Simulate monthly rebill
         </button>
@@ -78,6 +72,6 @@
     </main>
 
     <script type="module" src="ibm-admin.js"></script>
-      <script src="../shared/dev-tools.js" defer></script>
+    <script src="../shared/dev-tools.js" defer></script>
   </body>
 </html>

@@ -16,10 +16,10 @@ const GROUPS = [
     title: "Subscriptions",
     paths: ["basic-newsletter", "premium-newsletter", "tnp-test-base-annual"],
   },
-  { title: "Zero amount", paths: ["ibm-sub", "gym-as-you-go"] },
+  { title: "Zero amount", paths: ["ibm-sub", "gym-as-you-go", "thrift-ticket"] },
   {
     title: "High amount",
-    paths: ["dreamtonics", "thrift-ticket", "archicad-solo-1m-monthly"],
+    paths: ["dreamtonics", "archicad-solo-1m-monthly", "gs-test"],
   },
 ];
 
