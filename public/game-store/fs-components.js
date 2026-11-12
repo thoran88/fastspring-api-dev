@@ -42,6 +42,7 @@ let disclosuresComponent = null;
 let couponComponent = null;
 let googlePayComponent = null;
 let applePayComponent = null;
+let payPalComponent = null;
 
 // TNP-29563 - buyer-facing coupon entry. Backend owns all validation. The
 // iframe posts an internal "applyCoupon" message that the SDK turns into
@@ -256,6 +257,33 @@ function googlePayOptions(theme) {
   };
 }
 
+// PayPal's button colors are PayPal-controlled (variant only), so just match
+// the compliance notice and links to the page theme and let it fill the card.
+function payPalOptions(c) {
+  return {
+    variant: "gold",
+    disclosurePosition: "below",
+    frame: { width: "100%", maxWidth: "none" },
+    style: {
+      state: {
+        default: {
+          button: { height: "48px", borderRadius: "8px" },
+          complianceNotice: {
+            backgroundColor: "transparent",
+            color: c.disclosureText,
+            fontFamily: FONT_STACK,
+            fontSize: "12px",
+            padding: "12px 0",
+            rowGap: "6px",
+          },
+          link: { color: c.accent },
+        },
+        hover: { link: { color: c.accentHover } },
+      },
+    },
+  };
+}
+
 function disclosuresOptions(c) {
   return {
     style: {
@@ -323,6 +351,12 @@ export function mountComponents(theme) {
     "apple-pay-element",
     "fs-apple-pay",
     {},
+  );
+  payPalComponent = mountOrUpdate(
+    payPalComponent,
+    "paypal-element",
+    "fs-paypal",
+    payPalOptions(c),
   );
   cardComponent = mountOrUpdate(
     cardComponent,
