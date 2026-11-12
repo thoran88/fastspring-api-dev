@@ -318,12 +318,14 @@
          gap, and let FastSpring size it after that (button ~48px, 3DS
          challenge ~600px). */
       #google-pay-element iframe[style*="height: 100%"],
-      #apple-pay-element iframe[style*="height: 100%"] {
+      #apple-pay-element iframe[style*="height: 100%"],
+      #paypal-element iframe[style*="height: 100%"] {
         display: block;
         height: 0 !important;
       }
       #google-pay-element:has(iframe:not([style*="height: 100%"])),
-      #apple-pay-element:has(iframe:not([style*="height: 100%"])) {
+      #apple-pay-element:has(iframe:not([style*="height: 100%"])),
+      #paypal-element:has(iframe:not([style*="height: 100%"])) {
         margin: 12px 0;
       }
 
@@ -543,6 +545,7 @@
             </div>
             <div id="google-pay-element"></div>
             <div id="apple-pay-element"></div>
+            <div id="paypal-element"></div>
             <div id="email-element"></div>
             <div id="card-element"></div>
             <div id="pay-button-element"></div>

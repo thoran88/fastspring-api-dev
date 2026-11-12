@@ -41,6 +41,7 @@ const THEMES = {
 let emailComponent = null;
 let googlePayComponent = null;
 let applePayComponent = null;
+let payPalComponent = null;
 let cardComponent = null;
 let payButtonComponent = null;
 let disclosuresComponent = null;
@@ -83,6 +84,7 @@ export function mountComponents(theme) {
   teardown(emailComponent, "email-element");
   teardown(googlePayComponent, "google-pay-element");
   teardown(applePayComponent, "apple-pay-element");
+  teardown(payPalComponent, "paypal-element");
   teardown(cardComponent, "card-element");
   teardown(payButtonComponent, "pay-button-element");
   teardown(disclosuresComponent, "disclosures-element");
@@ -149,6 +151,39 @@ export function mountComponents(theme) {
     },
   });
   applePayComponent = createWallet("fs-apple-pay", "apple-pay-element", {});
+  // PayPal renders only when the store has it enabled and the cart supports
+  // it; otherwise the slot stays collapsed (see ibm-components.html).
+  payPalComponent = createWallet("fs-paypal", "paypal-element", {
+    variant: "gold",
+    disclosurePosition: "below",
+    frame: { width: "100%", maxWidth: "none" },
+    style: {
+      state: {
+        default: {
+          button: {
+            height: "48px",
+            borderRadius: "8px",
+          },
+          complianceNotice: {
+            backgroundColor: "transparent",
+            color: c.disclosureText,
+            fontFamily: FONT_STACK,
+            fontSize: "12px",
+            padding: "12px 0",
+            rowGap: "6px",
+          },
+          link: {
+            color: c.accent,
+          },
+        },
+        hover: {
+          link: {
+            color: c.accentHover,
+          },
+        },
+      },
+    },
+  });
 
   cardComponent = sdk.components.create("fs-card", {
     labelMode: "fixed",
